@@ -22,10 +22,30 @@
   }
 }
 
+@font-face {
+  font-family: "Playfair Display";
+  src: url("/fonts/Playfair_Display/PlayfairDisplay-VariableFont_wght.ttf")
+    format("truetype");
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "League Spartan";
+  src: url("/fonts/League_Spartan/LeagueSpartan-VariableFont_wght.ttf")
+    format("opentype");
+  font-weight: normal;
+  font-style: normal;
+}
+
+.font-playfair {
+  font-family: "Playfair Display", serif;
+}
+
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: "League Spartan", Helvetica, sans-serif;
 }
 
 @layer components {
@@ -46,4 +66,20 @@ body {
     border-radius: 9999px;
     cursor: pointer;
   }
+}
+
+@keyframes gradient-x {
+  0%,
+  100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+.animate-gradient {
+  background: linear-gradient(-45deg, #dbe4c6, #fdf1dc, #a7ba89, #e4d7b8);
+  background-size: 400% 400%;
+  animation: gradient-x 15s ease infinite;
 }
