@@ -5,7 +5,7 @@ import type React from "react";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Eye } from "lucide-react";
+import { Eye, EyeOff } from "lucide-react";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { register, clearError } from "@/lib/redux/slices/authSlice";
 
@@ -56,136 +56,141 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-[#FFF8E7] p-4">
-      <div className="w-full max-w-md rounded-lg bg-[#E2EAD8] p-8 shadow-lg">
-        <div className="mb-6 text-center">
-          <h2 className="text-3xl font-bold text-[#5B9A8B]">
-            Create an Account
-          </h2>
-          <p className="text-[#5B9A8B]">
-            Enter your details to create a new account
-          </p>
-        </div>
+    <div className="min-h-screen bg-[#FEF5E3] flex flex-col items-center justify-center p-4">
+      {/* Title */}
+      <h1 className="text-4xl font-bold text-[#5A9785] mt-4 mb-8">
+        Create your account
+      </h1>
 
-        <form onSubmit={handleSubmit}>
+      {/* Form Container */}
+      <div className="bg-[#E3E7D0] rounded-3xl p-6 w-full max-w-sm shadow-lg">
+        <form onSubmit={handleSubmit} className="space-y-5">
           {(error || validationError) && (
-            <div className="mb-4 rounded-md border border-red-400 bg-red-100 px-4 py-3 text-sm text-red-700">
+            <div className="mb-4 rounded-xl border border-red-400 bg-red-100 px-4 py-3 text-sm text-red-700">
               {validationError || error}
             </div>
           )}
 
-          <div className="mb-4">
-            <label
-              htmlFor="email"
-              className="mb-1 block text-sm font-medium text-[#5B9A8B]"
-            >
+          {/* Email */}
+          <div>
+            <label className="block text-[#5F6856] text-lg font-medium mb-2">
               Email
             </label>
             <input
-              id="email"
-              name="email"
               type="email"
-              placeholder="Email@address.com"
+              name="email"
               value={formData.email}
               onChange={handleChange}
               required
-              className="w-full rounded-md bg-white px-3 py-2 text-sm border border-[#5B9A8B]/20 focus:border-[#5B9A8B] focus:outline-none focus:ring focus:ring-[#5B9A8B]/20"
+              placeholder="Email@address.com"
+              className="w-full bg-white rounded-full px-6 py-2 text-gray-700 border-0 focus:outline-none focus:ring-2 focus:ring-[#7BA098]/30"
             />
           </div>
 
-          <div className="mb-4">
-            <label
-              htmlFor="username"
-              className="mb-1 block text-sm font-medium text-[#5B9A8B]"
-            >
+          {/* Username */}
+          <div>
+            <label className="block text-[#5F6856] text-lg font-medium mb-2">
               Username
             </label>
             <input
-              id="username"
+              type="text"
               name="username"
-              placeholder="Username"
               value={formData.username}
               onChange={handleChange}
               required
-              className="w-full rounded-md bg-white px-3 py-2 text-sm border border-[#5B9A8B]/20 focus:border-[#5B9A8B] focus:outline-none focus:ring focus:ring-[#5B9A8B]/20"
+              placeholder="Username"
+              className="w-full bg-white rounded-full px-6 py-2 text-gray-700 border-0 focus:outline-none focus:ring-2 focus:ring-[#7BA098]/30"
             />
           </div>
 
-          <div className="mb-4 relative">
-            <label
-              htmlFor="password"
-              className="mb-1 block text-sm font-medium text-[#5B9A8B]"
-            >
+          {/* Password */}
+          <div>
+            <label className="block text-[#5F6856] text-lg font-medium mb-2">
               Password
             </label>
             <div className="relative">
               <input
-                id="password"
-                name="password"
                 type={showPassword ? "text" : "password"}
-                placeholder="Password"
+                name="password"
                 value={formData.password}
                 onChange={handleChange}
                 required
-                className="w-full rounded-md bg-white px-3 py-2 text-sm border border-[#5B9A8B]/20 focus:border-[#5B9A8B] focus:outline-none focus:ring focus:ring-[#5B9A8B]/20"
+                placeholder="Password"
+                className="w-full bg-white rounded-full px-6 py-2 pr-12 text-gray-700 border-0 focus:outline-none focus:ring-2 focus:ring-[#7BA098]/30"
               />
               <button
                 type="button"
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400"
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
                 onClick={() => setShowPassword(!showPassword)}
               >
-                <Eye className="h-4 w-4" />
+                {showPassword ? (
+                  <EyeOff className="h-5 w-5" />
+                ) : (
+                  <Eye className="h-5 w-5" />
+                )}
               </button>
             </div>
           </div>
 
-          <div className="mb-6 relative">
-            <label
-              htmlFor="password_confirmation"
-              className="mb-1 block text-sm font-medium text-[#5B9A8B]"
-            >
+          {/* Confirm Password */}
+          <div>
+            <label className="block text-[#5F6856] text-lg font-medium mb-2">
               Confirm Password
             </label>
             <div className="relative">
               <input
-                id="password_confirmation"
-                name="password_confirmation"
                 type={showConfirmPassword ? "text" : "password"}
-                placeholder="Confirm Password"
+                name="password_confirmation"
                 value={formData.password_confirmation}
                 onChange={handleChange}
                 required
-                className="w-full rounded-md bg-white px-3 py-2 text-sm border border-[#5B9A8B]/20 focus:border-[#5B9A8B] focus:outline-none focus:ring focus:ring-[#5B9A8B]/20"
+                placeholder="Confirm Password"
+                className="w-full bg-white rounded-full px-6 py-2 pr-12 text-gray-700 border-0 focus:outline-none focus:ring-2 focus:ring-[#7BA098]/30"
               />
               <button
                 type="button"
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400"
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
                 onClick={() => setShowConfirmPassword(!showConfirmPassword)}
               >
-                <Eye className="h-4 w-4" />
+                {showConfirmPassword ? (
+                  <EyeOff className="h-5 w-5" />
+                ) : (
+                  <Eye className="h-5 w-5" />
+                )}
               </button>
             </div>
           </div>
 
-          <button
-            type="submit"
-            disabled={isLoading}
-            className="w-full rounded-md border border-[#5B9A8B] bg-[#5B9A8B] py-3 text-white hover:bg-[#4A8A7B] transition-colors disabled:opacity-50"
-          >
-            {isLoading ? "Creating account..." : "Sign up"}
-          </button>
-
-          <div className="mt-6 text-center text-sm">
-            <span className="text-[#5B9A8B]">Already have an account? </span>
-            <Link href="/login" className="text-[#3D8361] hover:underline">
-              Login
-            </Link>
+          {/* Submit */}
+          <div className="pt-2">
+            <button
+              type="submit"
+              disabled={isLoading}
+              className="w-full bg-[#E07A5F] hover:bg-[#D86C51] text-white font-semibold py-2 rounded-full transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {isLoading ? "Creating account..." : "Sign up"}
+            </button>
           </div>
         </form>
       </div>
 
-      <div className="mt-8">
-        <img src="/logo.png" alt="Choosee Logo" className="h-16 w-auto" />
+      {/* Link to Login Page */}
+      <div className="mt-8 text-center">
+        <span className="text-[#5D6531] text-lg">
+          {"Already have an account? "}
+        </span>
+        <Link
+          href="/login"
+          className="text-[#5D6531] text-lg font-semibold hover:underline"
+        >
+          Login
+        </Link>
+        <span className="text-[#8B9A8B] text-lg">.</span>
+      </div>
+
+      {/* Logo */}
+      <div className="mt-4">
+        <img src="/app-logo.png" alt="Choosee Logo" className="h-32 w-auto" />
       </div>
     </div>
   );

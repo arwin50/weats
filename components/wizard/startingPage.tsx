@@ -1,9 +1,13 @@
+"use client";
+
 import Image from "next/image";
 import Link from "next/link";
+import { UserMenu } from "@/components/userMenu";
 
 export default function StartingPage() {
   return (
     <div className="min-h-screen flex flex-col justify-center items-center bg-[#fdf1dc] text-center px-4">
+      <UserMenu />
       <p className="text-green-700 text-lg mb-2">Hungry?</p>
 
       <h1 className="text-4xl sm:text-5xl font-semibold text-[#cc4d4d]">
