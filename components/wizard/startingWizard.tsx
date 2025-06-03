@@ -76,7 +76,7 @@ export default function StartingWizard() {
 
   const StepOne = () => (
     <div className="w-full max-w-2xl mx-auto">
-      <h1 className="text-2xl md:text-3xl font-medium text-teal-600 text-center mb-8 px-4">
+      <h1 className="text-2xl md:text-3xl font-medium text-teal-700 text-center mb-8 px-4">
         We need to know more about you!
       </h1>
 
@@ -134,6 +134,9 @@ export default function StartingWizard() {
 
   const StepTwo = () => {
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+    const [customFood, setCustomFood] = useState("");
+    const [showModal, setShowModal] = useState(false);
+
     const foodOptions = [
       // General / Default
       "Surprise me, Choosee!",
@@ -175,9 +178,38 @@ export default function StartingWizard() {
       setIsDropdownOpen(false);
     };
 
+    useEffect(() => {
+      if (
+        formData.foodPreference !== "I'm picky I want..." &&
+        !foodOptions.includes(formData.foodPreference)
+      ) {
+        setCustomFood(formData.foodPreference);
+      }
+    }, [formData.foodPreference]);
+
+    const onNext = () => {
+      if (
+        formData.foodPreference === "I'm picky I want..." &&
+        customFood.trim() === ""
+      ) {
+        setShowModal(true);
+        return;
+      }
+
+      if (
+        (formData.foodPreference === "I'm picky I want..." ||
+          !foodOptions.includes(formData.foodPreference)) &&
+        customFood.trim() !== ""
+      ) {
+        setFormData({ ...formData, foodPreference: customFood.trim() });
+      }
+
+      handleNext();
+    };
+
     return (
       <div className="w-full max-w-2xl mx-auto">
-        <h1 className="text-2xl md:text-3xl font-medium text-teal-600 text-center mb-8 px-4 ">
+        <h1 className="text-2xl md:text-3xl font-medium text-teal-700 text-center mb-8 px-4 ">
           Great! We now know your budget. Next is...
         </h1>
 
@@ -190,13 +222,22 @@ export default function StartingWizard() {
             <div className="relative w-full max-w-xs">
               <button
                 onClick={toggleDropdown}
-                className={`${formData.foodPreference === "I'm picky I want..."
-                  ? "bg-[#5A9785] hover:bg-[#6BA885]"
-                  : "bg-[#E26F43] hover:bg-[#F36F43]"
-                  } font-playfair cursor-pointer text-white px-6 py-3 text-lg font-medium w-full text-center relative shadow-md/20 flex items-center justify-between gap-2 ${isDropdownOpen ? "rounded-t-lg" : "rounded-lg"
-                  }`}
+                className={`${
+                  formData.foodPreference === "I'm picky I want..." ||
+                  !foodOptions.includes(formData.foodPreference)
+                    ? "bg-[#5A9785] hover:bg-[#6BA885]"
+                    : "bg-[#E26F43] hover:bg-[#F36F43]"
+                } font-playfair cursor-pointer text-white px-6 py-3 text-lg font-medium w-full text-center relative shadow-md/20 flex items-center justify-between gap-2 ${
+                  isDropdownOpen ? "rounded-t-lg" : "rounded-lg"
+                }`}
               >
-                <span>{formData.foodPreference}</span>
+                <span>
+                  {formData.foodPreference === "I'm picky I want..." ||
+                  !foodOptions.includes(formData.foodPreference)
+                    ? "I'm picky I want..."
+                    : formData.foodPreference}
+                </span>
+
                 <ChevronDown className="w-5 h-5 text-white" />
               </button>
 
@@ -208,10 +249,11 @@ export default function StartingWizard() {
                         <button
                           key={option}
                           onClick={() => selectOption(option)}
-                          className={`font-playfair block w-full text-left px-6 py-3 text-white text-lg font-medium transition-colors${option === formData.foodPreference
-                            ? "bg-[#AA4D2A]"
-                            : "hover:bg-[#8B3F22] cursor-pointer"
-                            }`}
+                          className={`font-playfair block w-full text-left px-6 py-3 text-white text-lg font-medium transition-colors${
+                            option === formData.foodPreference
+                              ? "bg-[#AA4D2A]"
+                              : "hover:bg-[#8B3F22] cursor-pointer"
+                          }`}
                         >
                           {option}
                         </button>
@@ -223,24 +265,17 @@ export default function StartingWizard() {
             </div>
           </div>
 
-          {/* Conditionally render input when user is picky */}
-          {formData.foodPreference === "I'm picky I want..." && (
+          {(formData.foodPreference === "I'm picky I want..." ||
+            !foodOptions.includes(formData.foodPreference)) && (
             <div className="mt-6 max-w-xs mx-auto">
               <input
                 id="customFoodInput"
                 type="text"
                 placeholder="e.g., Sushi, Lasagna, Biryani..."
                 className="w-full bg-white text-gray-700 placeholder-gray-400 px-4 py-2 rounded-lg shadow focus:outline-none focus:ring-2 focus:ring-orange-400 border-0"
-                value={
-                  foodOptions.includes(formData.foodPreference)
-                    ? ""
-                    : formData.foodPreference
-                }
-                onChange={(e) =>
-                  setFormData({ ...formData, foodPreference: e.target.value })
-                }
+                value={customFood}
+                onChange={(e) => setCustomFood(e.target.value)}
               />
-
             </div>
           )}
         </div>
@@ -253,29 +288,40 @@ export default function StartingWizard() {
             Go back
           </button>
           <button
-            onClick={handleNext}
+            onClick={onNext}
             className="bg-red-400 hover:bg-red-500 text-white px-8 py-3 rounded-full text-lg font-medium transition-colors cursor-pointer shadow-md/20"
           >
             Next, please!
           </button>
         </div>
+
+        {showModal && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+            <div className="bg-white rounded-xl p-6 max-w-sm w-full text-center shadow-xl">
+              <h2 className="text-lg font-semibold text-red-600 mb-4">
+                Please put in your food preferences!
+              </h2>
+              <button
+                onClick={() => setShowModal(false)}
+                className="mt-2 px-4 py-2 bg-red-400 hover:bg-red-500 text-white rounded-lg transition cursor-pointer"
+              >
+                Okay
+              </button>
+            </div>
+          </div>
+        )}
       </div>
     );
-
   };
 
   const StepThree = () => {
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+    const [customDiet, setCustomDiet] = useState("");
+    const [showModal, setShowModal] = useState(false);
 
     const dietaryPreferences = [
-      {
-        name: "Not choosy atm!",
-        description: "",
-      },
-      {
-        name: "I have!",
-        description: "",
-      },
+      { name: "Not choosy atm!", description: "" },
+      { name: "I have!", description: "" },
       {
         name: "Vegetarian",
         description: "Excludes meat, but may include dairy and eggs.",
@@ -325,12 +371,58 @@ export default function StartingWizard() {
 
     const selectOption = (option: string) => {
       handleDietaryPreferenceChange(option);
+      if (option === "I have!") {
+        setCustomDiet("");
+      }
       setIsDropdownOpen(false);
     };
 
+    useEffect(() => {
+      const isPredefinedDiet = dietaryPreferences.some(
+        (p) => p.name === formData.dietaryPreference
+      );
+
+      if (formData.dietaryPreference !== "I have!" && !isPredefinedDiet) {
+        setCustomDiet(formData.dietaryPreference);
+      }
+    }, [formData.dietaryPreference]);
+
+    const onNext = () => {
+      if (
+        formData.dietaryPreference === "I have!" &&
+        customDiet.trim() === ""
+      ) {
+        setShowModal(true);
+        return;
+      }
+
+      const isPredefinedDiet = dietaryPreferences.some(
+        (p) => p.name === formData.dietaryPreference
+      );
+
+      if (
+        (formData.dietaryPreference === "I have!" || !isPredefinedDiet) &&
+        customDiet.trim() !== ""
+      ) {
+        setFormData({ ...formData, dietaryPreference: customDiet.trim() });
+      }
+
+      handleNext();
+    };
+
+    useEffect(() => {
+      const isCustom =
+        formData.dietaryPreference !== "I have!" &&
+        !dietaryPreferences.some((p) => p.name === formData.dietaryPreference);
+
+      if (isCustom) {
+        setCustomDiet(formData.dietaryPreference);
+      }
+    }, [formData.dietaryPreference]);
+
     return (
       <div className="w-full max-w-2xl mx-auto">
-        <h1 className="text-2xl md:text-3xl font-medium text-teal-600 text-center mb-8 px-4">
+        <h1 className="text-2xl md:text-3xl font-medium text-teal-700 text-center mb-8 px-4">
           Okay, that is noted! Now...
         </h1>
 
@@ -343,13 +435,25 @@ export default function StartingWizard() {
             <div className="relative w-full max-w-xs">
               <button
                 onClick={toggleDropdown}
-                className={`${formData.dietaryPreference === "I have!"
-                  ? "bg-[#5A9785] hover:bg-[#6BA885]"
-                  : "bg-[#E26F43] hover:bg-[#F36F43]"
-                  } font-playfair cursor-pointer text-white px-6 py-3 text-lg font-medium w-full text-center relative shadow-md/20 flex items-center justify-between gap-2 ${isDropdownOpen ? "rounded-t-lg" : "rounded-lg"
-                  }`}
+                className={`${
+                  formData.dietaryPreference === "I have!" ||
+                  !dietaryPreferences.some(
+                    (p) => p.name === formData.dietaryPreference
+                  )
+                    ? "bg-[#5A9785] hover:bg-[#6BA885]"
+                    : "bg-[#E26F43] hover:bg-[#F36F43]"
+                } font-playfair cursor-pointer text-white px-6 py-3 text-lg font-medium w-full text-center relative shadow-md/20 flex items-center justify-between gap-2 ${
+                  isDropdownOpen ? "rounded-t-lg" : "rounded-lg"
+                }`}
               >
-                <span>{formData.dietaryPreference}</span>
+                <span>
+                  {formData.dietaryPreference === "I have!" ||
+                  !dietaryPreferences.some(
+                    (p) => p.name === formData.dietaryPreference
+                  )
+                    ? "I have!"
+                    : formData.dietaryPreference}
+                </span>
                 <ChevronDown className="w-5 h-5 text-white" />
               </button>
 
@@ -361,10 +465,11 @@ export default function StartingWizard() {
                         <button
                           key={option.name}
                           onClick={() => selectOption(option.name)}
-                          className={`block w-full text-left px-6 py-3 text-white text-lg font-medium transition-colors ${option.name === formData.dietaryPreference
-                            ? "bg-[#AA4D2A]"
-                            : "hover:bg-[#8B3F22] cursor-pointer"
-                            }`}
+                          className={`block w-full text-left px-6 py-3 text-white text-lg font-medium transition-colors ${
+                            option.name === formData.dietaryPreference
+                              ? "bg-[#AA4D2A]"
+                              : "hover:bg-[#8B3F22] cursor-pointer"
+                          }`}
                         >
                           <div>
                             <div className="font-semibold font-playfair">
@@ -383,22 +488,18 @@ export default function StartingWizard() {
             </div>
           </div>
 
-          {/* Show input when "I have!" is selected */}
-          {formData.dietaryPreference === "I have!" && (
+          {(formData.dietaryPreference === "I have!" ||
+            !dietaryPreferences.some(
+              (p) => p.name === formData.dietaryPreference
+            )) && (
             <div className="mt-6 max-w-xs mx-auto">
               <input
-                id="customDietInput"
+                id="customFoodInput"
                 type="text"
-                placeholder="e.g., No dairy, No shellfish..."
+                placeholder="e.g., Sushi, Lasagna, Biryani..."
                 className="w-full bg-white text-gray-700 placeholder-gray-400 px-4 py-2 rounded-lg shadow focus:outline-none focus:ring-2 focus:ring-orange-400 border-0"
-                value={
-                  dietaryPreferences.find(p => p.name === formData.dietaryPreference)
-                    ? ""
-                    : formData.dietaryPreference
-                }
-                onChange={(e) =>
-                  setFormData({ ...formData, dietaryPreference: e.target.value })
-                }
+                value={customDiet}
+                onChange={(e) => setCustomDiet(e.target.value)}
               />
             </div>
           )}
@@ -412,20 +513,35 @@ export default function StartingWizard() {
             Go back
           </button>
           <button
-            onClick={handleNext}
+            onClick={onNext}
             className="bg-red-400 hover:bg-red-500 text-white px-8 py-3 rounded-full text-lg font-medium transition-colors cursor-pointer shadow-md/20"
           >
             Next, please!
           </button>
         </div>
+
+        {showModal && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+            <div className="bg-white rounded-xl p-6 max-w-sm w-full text-center shadow-xl">
+              <h2 className="text-lg font-semibold text-red-600 mb-4">
+                Please put in your dietary preferences!
+              </h2>
+              <button
+                onClick={() => setShowModal(false)}
+                className="mt-2 px-4 py-2 bg-red-400 hover:bg-red-500 text-white rounded-lg transition cursor-pointer"
+              >
+                Okay
+              </button>
+            </div>
+          </div>
+        )}
       </div>
     );
-
   };
 
   const StepFour = () => (
     <div className="w-full max-w-2xl mx-auto">
-      <h1 className="text-2xl md:text-3xl font-medium text-teal-600 text-center mb-8 px-4">
+      <h1 className="text-2xl md:text-3xl font-medium text-teal-700 text-center mb-8">
         Almost there! We just need one last thing from you...
       </h1>
 
@@ -438,10 +554,11 @@ export default function StartingWizard() {
         <div className="flex justify-center">
           <button
             onClick={handleLocationToggle}
-            className={`flex items-center gap-2 px-6 py-3 rounded-full text-lg font-medium transition-colors cursor-pointer shadow-md/20 ${formData.locationEnabled
-              ? "bg-green-600 hover:bg-green-700 text-white shadow-md/20"
-              : "bg-[#5A9785] hover:bg-teal-600 text-white shadow-md/20"
-              }`}
+            className={`flex items-center gap-2 px-6 py-3 rounded-full text-lg font-medium transition-colors cursor-pointer shadow-md/20 ${
+              formData.locationEnabled
+                ? "bg-green-600 hover:bg-green-700 text-white shadow-md/20"
+                : "bg-[#5A9785] hover:bg-teal-600 text-white shadow-md/20"
+            }`}
           >
             <MapPin className="w-5 h-5" />
             {formData.locationEnabled ? "Location Enabled" : "Enable location"}
@@ -467,7 +584,7 @@ export default function StartingWizard() {
   );
 
   return (
-    <div className="min-h-screen bg-[#FEF5E3] py-8 px-4">
+    <div className="min-h-screen bg-[#FEF5E3] py-8 px-4 animate-gradient">
       {/* Logo placeholder */}
       <div className="absolute top-4 right-4 md:top-8 md:right-8">
         <div className="w-16 h-16 md:w-20 md:h-20 bg-gradient-to-br from-orange-400 to-teal-500 rounded-full flex items-center justify-center">
@@ -483,8 +600,9 @@ export default function StartingWizard() {
           {[1, 2, 3, 4].map((step) => (
             <div
               key={step}
-              className={`w-3 h-3 rounded-full transition-colors ${step <= currentStep ? "bg-teal-500" : "bg-gray-300"
-                }`}
+              className={`w-3 h-3 rounded-full transition-colors ${
+                step <= currentStep ? "bg-teal-500" : "bg-white"
+              }`}
             />
           ))}
         </div>
