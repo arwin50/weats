@@ -27,7 +27,7 @@ export default function StartingPage() {
 
       <div className="mt-10">
         <Image
-          src="/choosee-logo.png"
+          src="/logo.svg"
           alt="Choosee Logo"
           width={120}
           height={60}
