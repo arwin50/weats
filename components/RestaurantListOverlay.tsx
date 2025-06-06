@@ -8,14 +8,20 @@ import AccessTimeIcon from "@mui/icons-material/AccessTime";
 interface RestaurantListOverlayProps {
   restaurants: MapMarker[];
   onSelectRestaurant: (restaurant: MapMarker) => void;
+  isVisible: boolean;
 }
 
 export const RestaurantListOverlay = ({
   restaurants,
   onSelectRestaurant,
+  isVisible,
 }: RestaurantListOverlayProps) => {
   return (
-    <div className="fixed left-0 top-12 h-[90%] w-[30%] bg-[#D5DBB5] border-8 border-[#D5DBB5] overflow-y-auto p-4 z-40 shadow-md rounded-r-xl custom-scrollbar">
+    <div
+      className={`fixed left-0 top-12 h-[90%] w-[30%] bg-[#D5DBB5] border-8 border-[#D5DBB5] overflow-y-auto p-4 z-40 shadow-md rounded-r-xl custom-scrollbar transform transition-transform duration-300 ease-in-out" ${
+        isVisible ? "translate-x-0" : "-translate-x-full"
+      }`}
+    >
       {restaurants.map((restaurant, index) => (
         <div
           key={index}
