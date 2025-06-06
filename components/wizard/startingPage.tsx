@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
+import logo from "@/assets/images/logo.svg";
 
 export default function StartingPage() {
   return (
@@ -25,12 +26,13 @@ export default function StartingPage() {
         Let Choosee choose it!
       </Link>
 
-      <div className="mt-10">
+      <div className="absolute top-4 right-4 md:top-4 md:right-8">
         <Image
-          src="/choosee-logo.png"
-          alt="Choosee Logo"
-          width={120}
-          height={60}
+          src={logo}
+          alt="Logo"
+          width={130}
+          height={130}
+          className="object-contain"
         />
       </div>
     </div>
