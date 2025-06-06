@@ -2,7 +2,11 @@
 
 import React, { useEffect, useState } from "react";
 import { FoodMap, MapMarker } from "@/components/map";
+import { RestaurantListOverlay } from "@/components/RestaurantListOverlay";
+import { RestaurantModal } from "@/components/RestaurantModal";
 import axios from "axios";
+
+import { Eye, EyeOff } from "lucide-react";
 
 interface Restaurant {
   name: string;
@@ -25,6 +29,19 @@ interface ApiResponse {
 export default function DashboardPage() {
   const [placeMarkers, setPlaceMarkers] = useState<MapMarker[]>([]);
   const [center, setCenter] = useState({ lat: 10.3157, lng: 123.8854 });
+  const [selectedRestaurant, setSelectedRestaurant] =
+    useState<MapMarker | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isOverlayVisible, setIsOverlayVisible] = useState(true);
+
+  const handleSelectRestaurant = (restaurant: MapMarker) => {
+    setSelectedRestaurant(restaurant);
+    setIsModalOpen(true);
+  };
+
+  const toggleOverlayVisibility = () => {
+    setIsOverlayVisible((prev) => !prev);
+  };
 
   useEffect(() => {
     const fetchPlacesonArea = async () => {
@@ -62,6 +79,25 @@ export default function DashboardPage() {
   return (
     <div>
       <FoodMap markers={placeMarkers} center={center} />
+
+      <button
+        onClick={toggleOverlayVisibility}
+        className="absolute top-4 left-4 z-50 bg-[#D5DBB5] p-2 rounded shadow text-black hover:bg-[#C2C8A4] transition"
+      >
+        {isOverlayVisible ? <Eye size={20} /> : <EyeOff size={20} />}
+      </button>
+
+      <RestaurantListOverlay
+        restaurants={placeMarkers}
+        onSelectRestaurant={handleSelectRestaurant}
+        isVisible={isOverlayVisible}
+      />
+
+      <RestaurantModal
+        restaurant={selectedRestaurant}
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+      />
     </div>
   );
 }
