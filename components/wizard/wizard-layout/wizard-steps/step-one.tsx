@@ -9,6 +9,7 @@ interface FormData {
   foodPreference: string;
   dietaryPreference: string;
   locationEnabled: boolean;
+  locationCoords?: { lat: number; lng: number };
 }
 
 interface StepOneProps {
