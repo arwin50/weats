@@ -50,7 +50,7 @@ export default function StepFour({
       </div>
 
       {formData.locationEnabled && (
-        <div className="flex flex-row gap-4 justify-between px-16">
+        <div className="flex flex-row gap-4 justify-between sm:px-16">
           <button className="px-5 py-2 rounded-full bg-[#A97256] hover:bg-[#7b533f] text-white font-medium shadow-sm transition-colors flex flex-col items-center text-sm">
             <span className="text-lg">Choose Location</span>
             <span className="text-xs">Pick from the map</span>
