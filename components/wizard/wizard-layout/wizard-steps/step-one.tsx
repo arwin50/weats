@@ -1,42 +1,50 @@
-"use client"
+"use client";
 
-import { useCallback, useState, useEffect } from "react"
-import Slider from "@mui/material/Slider"
-import WizardStepLayout from "../wizard-step-layout"
+import { useCallback, useState, useEffect } from "react";
+import Slider from "@mui/material/Slider";
+import WizardStepLayout from "../wizard-step-layout";
 
 interface FormData {
-  maxPrice: number
-  foodPreference: string
-  dietaryPreference: string
-  locationEnabled: boolean
+  maxPrice: number;
+  foodPreference: string;
+  dietaryPreference: string;
+  locationEnabled: boolean;
 }
 
 interface StepOneProps {
-  formData: FormData
-  updateFormData: (updates: Partial<FormData>) => void
-  onNext: () => void
+  formData: FormData;
+  updateFormData: (updates: Partial<FormData>) => void;
+  onNext: () => void;
 }
 
-export default function StepOne({ formData, updateFormData, onNext }: StepOneProps) {
-  const [mounted, setMounted] = useState(false)
+export default function StepOne({
+  formData,
+  updateFormData,
+  onNext,
+}: StepOneProps) {
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    setMounted(true)
-  }, [])
+    setMounted(true);
+  }, []);
 
   const handleMaxPriceChange = useCallback(
     (event: Event, newValue: number | number[]) => {
       if (typeof newValue === "number") {
-        updateFormData({ maxPrice: newValue })
+        updateFormData({ maxPrice: newValue });
       }
     },
-    [updateFormData],
-  )
+    [updateFormData]
+  );
 
   return (
-    <WizardStepLayout title="We need to know more about you!" subtitle="What's your price range?" onNext={onNext}>
-      <div className="relative mb-8">
-        <div className="flex justify-between mb-4 text-sm text-gray-600">
+    <WizardStepLayout
+      title="We need to know more about you!"
+      subtitle="What's your price range?"
+      onNext={onNext}
+    >
+      <div className="w-full relative mb-8">
+        <div className="w-full flex justify-between mb-4 text-sm text-gray-600">
           <span>₱0</span>
           <span>₱{formData.maxPrice}</span>
         </div>
@@ -70,5 +78,5 @@ export default function StepOne({ formData, updateFormData, onNext }: StepOnePro
         </div>
       </div>
     </WizardStepLayout>
-  )
+  );
 }
