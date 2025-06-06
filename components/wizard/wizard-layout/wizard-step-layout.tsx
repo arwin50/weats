@@ -42,14 +42,14 @@ export default function WizardStepLayout({
         {showBackButton && onBack && (
           <button
             onClick={onBack}
-            className="w-50 bg-gray-400 hover:bg-gray-500 text-white px-6 py-3 rounded-full text-lg font-medium transition-colors cursor-pointer shadow-md/20"
+            className="w-50 bg-gray-400 hover:bg-gray-500 text-white px-6 py-3 rounded-xl text-lg font-medium transition-colors cursor-pointer shadow-md/20"
           >
             Go back
           </button>
         )}
         <button
           onClick={onNext}
-          className="w-50 bg-red-400 hover:bg-red-500 text-white px-8 py-3 rounded-full text-lg font-medium transition-colors cursor-pointer shadow-md/20"
+          className="w-50 bg-red-400 hover:bg-red-500 text-white px-8 py-3 rounded-xl text-lg font-medium transition-colors cursor-pointer shadow-md/20"
         >
           {nextButtonText}
         </button>
