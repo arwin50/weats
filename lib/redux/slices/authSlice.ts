@@ -1,6 +1,13 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axios from "axios";
 
+const api = axios.create({
+  baseURL: "http://localhost:8000/api",
+  headers: {
+    "Content-Type": "application/json",
+  },
+});
+
 // Login thunk
 export const login = createAsyncThunk(
   "auth/login",
@@ -9,7 +16,10 @@ export const login = createAsyncThunk(
     thunkAPI
   ) => {
     try {
-      const response = await axios.post("/api/auth/login", { email, password });
+      const response = await api.post("/users/login", {
+        email,
+        password,
+      });
       const { accessToken, refreshToken, user } = response.data;
       return { user, accessToken, refreshToken };
     } catch (error: any) {
@@ -33,7 +43,7 @@ export const register = createAsyncThunk(
     thunkAPI
   ) => {
     try {
-      const response = await axios.post("/api/register", formData);
+      const response = await api.post("/users/register", formData);
       return response.data;
     } catch (error: any) {
       return thunkAPI.rejectWithValue(
