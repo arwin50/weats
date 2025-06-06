@@ -1,27 +1,32 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import { ChevronDown } from "lucide-react"
-import WizardStepLayout from "../wizard-step-layout"
+import { useState, useEffect } from "react";
+import { ChevronDown } from "lucide-react";
+import WizardStepLayout from "../wizard-step-layout";
 
 interface FormData {
-  maxPrice: number
-  foodPreference: string
-  dietaryPreference: string
-  locationEnabled: boolean
+  maxPrice: number;
+  foodPreference: string;
+  dietaryPreference: string;
+  locationEnabled: boolean;
 }
 
 interface StepTwoProps {
-  formData: FormData
-  updateFormData: (updates: Partial<FormData>) => void
-  onNext: () => void
-  onBack: () => void
+  formData: FormData;
+  updateFormData: (updates: Partial<FormData>) => void;
+  onNext: () => void;
+  onBack: () => void;
 }
 
-export default function StepTwo({ formData, updateFormData, onNext, onBack }: StepTwoProps) {
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false)
-  const [customFood, setCustomFood] = useState("")
-  const [showModal, setShowModal] = useState(false)
+export default function StepTwo({
+  formData,
+  updateFormData,
+  onNext,
+  onBack,
+}: StepTwoProps) {
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [customFood, setCustomFood] = useState("");
+  const [showModal, setShowModal] = useState(false);
 
   const foodOptions = [
     "Surprise me, Choosee!",
@@ -49,36 +54,39 @@ export default function StepTwo({ formData, updateFormData, onNext, onBack }: St
     "Fast Food",
     "Seafood",
     "Desserts",
-  ]
+  ];
 
-  const toggleDropdown = () => setIsDropdownOpen((prev) => !prev)
+  const toggleDropdown = () => setIsDropdownOpen((prev) => !prev);
 
   const selectOption = (option: string) => {
-    updateFormData({ foodPreference: option })
-    setIsDropdownOpen(false)
-  }
+    updateFormData({ foodPreference: option });
+    setIsDropdownOpen(false);
+  };
 
   useEffect(() => {
-    if (formData.foodPreference !== "I'm picky I want..." && !foodOptions.includes(formData.foodPreference)) {
-      setCustomFood(formData.foodPreference)
+    if (
+      formData.foodPreference !== "I'm picky I want..." &&
+      !foodOptions.includes(formData.foodPreference)
+    ) {
+      setCustomFood(formData.foodPreference);
     }
-  }, [formData.foodPreference])
+  }, [formData.foodPreference]);
 
   const handleNext = () => {
-    if (formData.foodPreference === "I'm picky I want..." && customFood.trim() === "") {
-      setShowModal(true)
-      return
+    const isCustomSelected = formData.foodPreference === "I'm picky I want...";
+    const isCustomTyped = !foodOptions.includes(formData.foodPreference);
+
+    if ((isCustomSelected || isCustomTyped) && customFood.trim() === "") {
+      setShowModal(true);
+      return;
     }
 
-    if (
-      (formData.foodPreference === "I'm picky I want..." || !foodOptions.includes(formData.foodPreference)) &&
-      customFood.trim() !== ""
-    ) {
-      updateFormData({ foodPreference: customFood.trim() })
+    if ((isCustomSelected || isCustomTyped) && customFood.trim() !== "") {
+      updateFormData({ foodPreference: customFood.trim() });
     }
 
-    onNext()
-  }
+    onNext();
+  };
 
   return (
     <>
@@ -93,14 +101,18 @@ export default function StepTwo({ formData, updateFormData, onNext, onBack }: St
           <div className="relative w-full max-w-xs">
             <button
               onClick={toggleDropdown}
-              className={`${formData.foodPreference === "I'm picky I want..." || !foodOptions.includes(formData.foodPreference)
+              className={`${
+                formData.foodPreference === "I'm picky I want..." ||
+                !foodOptions.includes(formData.foodPreference)
                   ? "bg-[#5A9785] hover:bg-[#6BA885]"
                   : "bg-[#E26F43] hover:bg-[#F36F43]"
-                } font-playfair cursor-pointer text-white px-6 py-3 text-lg font-medium w-full text-center relative shadow-md/20 flex items-center justify-between gap-2 ${isDropdownOpen ? "rounded-t-lg" : "rounded-lg"
-                }`}
+              } font-playfair cursor-pointer text-white px-6 py-3 text-lg font-medium w-full text-center relative shadow-md/20 flex items-center justify-between gap-2 ${
+                isDropdownOpen ? "rounded-t-lg" : "rounded-lg"
+              }`}
             >
               <span>
-                {formData.foodPreference === "I'm picky I want..." || !foodOptions.includes(formData.foodPreference)
+                {formData.foodPreference === "I'm picky I want..." ||
+                !foodOptions.includes(formData.foodPreference)
                   ? "I'm picky I want..."
                   : formData.foodPreference}
               </span>
@@ -115,8 +127,11 @@ export default function StepTwo({ formData, updateFormData, onNext, onBack }: St
                       <button
                         key={option}
                         onClick={() => selectOption(option)}
-                        className={`font-playfair block w-full text-left px-6 py-3 text-white text-lg font-medium transition-colors${option === formData.foodPreference ? "bg-[#AA4D2A]" : "hover:bg-[#8B3F22] cursor-pointer"
-                          }`}
+                        className={`font-playfair block w-full text-left px-6 py-3 text-white text-lg font-medium transition-colors${
+                          option === formData.foodPreference
+                            ? "bg-[#AA4D2A]"
+                            : "hover:bg-[#8B3F22] cursor-pointer"
+                        }`}
                       >
                         {option}
                       </button>
@@ -128,7 +143,8 @@ export default function StepTwo({ formData, updateFormData, onNext, onBack }: St
           </div>
         </div>
 
-        {(formData.foodPreference === "I'm picky I want..." || !foodOptions.includes(formData.foodPreference)) && (
+        {(formData.foodPreference === "I'm picky I want..." ||
+          !foodOptions.includes(formData.foodPreference)) && (
           <div className="mt-6 max-w-xs mx-auto">
             <input
               id="customFoodInput"
@@ -145,7 +161,9 @@ export default function StepTwo({ formData, updateFormData, onNext, onBack }: St
       {showModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
           <div className="bg-white rounded-xl p-6 max-w-sm w-full text-center shadow-xl">
-            <h2 className="text-lg font-semibold text-red-600 mb-4">Please put in your food preferences!</h2>
+            <h2 className="text-lg font-semibold text-red-600 mb-4">
+              Please put in your food preferences!
+            </h2>
             <button
               onClick={() => setShowModal(false)}
               className="mt-2 px-4 py-2 bg-red-400 hover:bg-red-500 text-white rounded-lg transition cursor-pointer"
@@ -156,5 +174,5 @@ export default function StepTwo({ formData, updateFormData, onNext, onBack }: St
         </div>
       )}
     </>
-  )
+  );
 }
