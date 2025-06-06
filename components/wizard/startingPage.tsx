@@ -1,10 +1,14 @@
+"use client";
+
 import Image from "next/image";
 import Link from "next/link";
 import logo from "@/assets/images/logo.svg";
+import { UserMenu } from "@/components/userMenu";
 
 export default function StartingPage() {
   return (
     <div className="animate-gradient h-screen flex flex-col justify-center items-center bg-[#fdf1dc] text-cente px-4 overflow-hidden">
+      <UserMenu />
       <p className="text-[2.1rem] sm:text-[4rem] text-green-700 text-lg ">
         Hungry?
       </p>

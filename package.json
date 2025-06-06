@@ -11,15 +11,17 @@
   "dependencies": {
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.0",
+    "@googlemaps/adv-markers-utils": "^1.2.4",
     "@mui/material": "^7.1.1",
+    "@react-google-maps/api": "^2.20.6",
+    "@reduxjs/toolkit": "^2.8.2",
+    "axios": "^1.9.0",
     "lucide-react": "^0.511.0",
     "next": "15.3.3",
-    "@googlemaps/adv-markers-utils": "^1.2.4",
-    "@react-google-maps/api": "^2.20.6",
-    "axios": "^1.9.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
-    "react-range-slider-input": "^3.2.1"
+    "react-range-slider-input": "^3.2.1",
+    "react-redux": "^9.2.0"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
