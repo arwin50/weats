@@ -2,6 +2,8 @@
 
 import React, { useEffect, useState } from "react";
 import { FoodMap, MapMarker } from "@/components/map";
+import { RestaurantListOverlay } from "@/components/RestaurantListOverlay";
+import { RestaurantModal } from "@/components/RestaurantModal";
 import axios from "axios";
 
 interface Restaurant {
@@ -25,6 +27,9 @@ interface ApiResponse {
 export default function DashboardPage() {
   const [placeMarkers, setPlaceMarkers] = useState<MapMarker[]>([]);
   const [center, setCenter] = useState({ lat: 10.3157, lng: 123.8854 });
+  const [selectedRestaurant, setSelectedRestaurant] =
+    useState<MapMarker | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   useEffect(() => {
     const fetchPlacesonArea = async () => {
@@ -59,9 +64,23 @@ export default function DashboardPage() {
     fetchPlacesonArea();
   }, [center]);
 
+  const handleSelectRestaurant = (restaurant: MapMarker) => {
+    setSelectedRestaurant(restaurant);
+    setIsModalOpen(true);
+  };
+
   return (
     <div>
       <FoodMap markers={placeMarkers} center={center} />
+      <RestaurantListOverlay
+        restaurants={placeMarkers}
+        onSelectRestaurant={handleSelectRestaurant}
+      />
+      <RestaurantModal
+        restaurant={selectedRestaurant}
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+      />
     </div>
   );
 }
