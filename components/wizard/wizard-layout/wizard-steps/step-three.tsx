@@ -115,7 +115,7 @@ export default function StepThree({ formData, updateFormData, onNext, onBack }: 
                         }`}
                       >
                         <div>
-                          <div className="font-semibold font-playfair">{option.name}</div>
+                          <div className=" font-playfair">{option.name}</div>
                           <div className="text-sm opacity-80">{option.description}</div>
                         </div>
                       </button>
