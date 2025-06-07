@@ -51,6 +51,7 @@ export default function RegisterPage() {
       await dispatch(register(formData)).unwrap();
       router.push("/login?registered=true");
     } catch (err) {
+      // Error is handled by the auth slice
       console.error("Registration error:", err);
     }
   };

@@ -30,9 +30,9 @@ interface ApiResponse {
 }
 
 export default function DashboardPage() {
-  const router = useRouter();
   const dispatch = useAppDispatch();
   const promptData = useAppSelector((state) => state.prompt);
+  const authData = useAppSelector((state) => state.auth);
   const [placeMarkers, setPlaceMarkers] = useState<MapMarker[]>([]);
   const [center, setCenter] = useState({ lat: 10.3157, lng: 123.8854 });
   const [selectedRestaurant, setSelectedRestaurant] =
@@ -46,6 +46,16 @@ export default function DashboardPage() {
     // Mark the app as used when the dashboard is loaded
     dispatch(markAppAsUsed());
   }, [dispatch]);
+
+  useEffect(() => {
+    // Log user data
+    console.log("Auth State:", {
+      isAuthenticated: authData.isAuthenticated,
+      user: authData.user,
+      accessToken: authData.accessToken ? "Present" : "Not Present",
+      refreshToken: authData.refreshToken ? "Present" : "Not Present",
+    });
+  }, [authData]);
 
   useEffect(() => {
     // Set center from Redux state
