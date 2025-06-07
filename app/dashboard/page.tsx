@@ -9,6 +9,8 @@ import { RestaurantModal } from "@/components/RestaurantModal";
 import { Eye, EyeOff, Book, MapPin, Star } from "lucide-react";
 import { authApi } from "@/lib/redux/slices/authSlice";
 import { useAppSelector } from "@/lib/redux/hooks";
+import { FaRedo } from "react-icons/fa";
+import { FaBookOpen, FaMapMarkedAlt, FaUtensils } from "react-icons/fa";
 
 interface Restaurant {
   name: string;
@@ -194,8 +196,59 @@ export default function DashboardPage() {
     setSelectedRestaurant(null);
   };
 
+  const startWizard = () => {
+    // Implement the logic to start the wizard
+    console.log("Starting wizard");
+  };
+
   return (
     <div>
+      {/* Responsive button row at top left */}
+      <div className="fixed top-4 left-0 z-50 flex gap-2 sm:gap-4 items-center px-2 sm:px-6 py-2 w-full max-w-full overflow-x-auto bg-transparent">
+        {/* Recycle button */}
+        <button
+          onClick={startWizard}
+          className="bg-[#C95C5C] hover:bg-[#b94a4a] text-white rounded-xl px-3 py-2 flex items-center justify-center shadow-md focus:outline-none text-base sm:text-lg"
+          aria-label="Restart Wizard"
+        >
+          <FaRedo size={18} />
+        </button>
+        {/* Toggle overlays button */}
+        <button
+          onClick={() => setIsOverlayVisible((v) => !v)}
+          className="bg-[#E0E0E0] hover:bg-[#cccccc] text-black rounded-xl px-3 py-2 flex items-center justify-center shadow-md focus:outline-none text-base sm:text-lg"
+          aria-label="Toggle overlays"
+        >
+          {isOverlayVisible ? <Eye size={18} /> : <EyeOff size={18} />}
+        </button>
+        {/* Overlay action buttons, only visible when overlays are ON */}
+        {isOverlayVisible && (
+          <>
+            <button
+              onClick={() => setActiveOverlay("restaurant")}
+              className="bg-[#F5E6C8] hover:bg-[#e5d6b8] text-black rounded-xl px-3 py-2 flex items-center gap-1 sm:gap-2 shadow-md focus:outline-none font-semibold text-base sm:text-lg"
+            >
+              <span className="font-bold">Resto List</span>{" "}
+              <FaUtensils size={16} />
+            </button>
+            <button
+              onClick={() => setActiveOverlay("recently")}
+              className="bg-[#FFF396] hover:bg-[#e6e272] text-black rounded-xl px-3 py-2 flex items-center gap-1 sm:gap-2 shadow-md focus:outline-none font-semibold text-base sm:text-lg"
+            >
+              <span className="font-bold">View history</span>{" "}
+              <FaBookOpen size={16} />
+            </button>
+            <button
+              onClick={() => setActiveOverlay("previous")}
+              className="bg-[#B7D3C4] hover:bg-[#a0bfb0] text-black rounded-xl px-3 py-2 flex items-center gap-1 sm:gap-2 shadow-md focus:outline-none font-semibold text-base sm:text-lg"
+            >
+              <span className="font-bold">Suggestions</span>{" "}
+              <FaMapMarkedAlt size={16} />
+            </button>
+          </>
+        )}
+      </div>
+
       {isLoading && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white p-8 rounded-2xl shadow-xl text-center">
@@ -230,50 +283,20 @@ export default function DashboardPage() {
 
       <FoodMap markers={placeMarkers} center={center} />
 
-      <button
-        onClick={toggleOverlayVisibility}
-        className="fixed top-2 left-2 z-50 bg-[#C2C8A4] p-2 rounded shadow text-black hover:bg-[#B0B68F] transition"
-      >
-        {isOverlayVisible ? <Eye size={20} /> : <EyeOff size={20} />}
-      </button>
-
-      {isOverlayVisible && (
-        <div className="fixed z-40 flex flex-col items-end gap-1.5 px-2 md:px-0 left-[90%] sm:left-100 top-20 transform -translate-x-full md:translate-x-0">
-          <div
-            onClick={() => setActiveOverlay("restaurant")}
-            className="w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 bg-[#D5DBB5] rounded-r-full flex items-center justify-center hover:bg-[#BFC59A] cursor-pointer transition shadow-md"
-          >
-            <Book size={24} className="text-green-900 sm:size-6 md:size-7" />
-          </div>
-          <div
-            onClick={() => setActiveOverlay("recently")}
-            className="w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 bg-[#FFF396] rounded-r-full flex items-center justify-center hover:bg-[#E6E272] cursor-pointer transition shadow-md"
-          >
-            <MapPin size={24} className="text-green-900 sm:size-6 md:size-7" />
-          </div>
-          <div
-            onClick={() => setActiveOverlay("previous")}
-            className="w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 bg-[#FF9268] rounded-r-full flex items-center justify-center hover:bg-[#E57E56] cursor-pointer transition shadow-md"
-          >
-            <Star size={24} className="text-green-900 sm:size-6 md:size-7" />
-          </div>
-        </div>
-      )}
-
-      {activeOverlay === "restaurant" && (
+      {isOverlayVisible && activeOverlay === "restaurant" && (
         <RestaurantListOverlay
           restaurants={placeMarkers}
           onSelectRestaurant={handleSelectRestaurant}
-          isVisible={isOverlayVisible}
+          isVisible={activeOverlay === "restaurant"}
           preferences={promptData}
         />
       )}
-      {activeOverlay === "previous" && (
-        <PreviousPromptOverlay isVisible={isOverlayVisible} />
+      {isOverlayVisible && activeOverlay === "previous" && (
+        <PreviousPromptOverlay isVisible={activeOverlay === "previous"} />
       )}
-      {activeOverlay === "recently" && (
+      {isOverlayVisible && activeOverlay === "recently" && (
         <RecentlyVisitedOverlay
-          isVisible={isOverlayVisible}
+          isVisible={activeOverlay === "recently"}
           recentlyVisited={recentlyVisited}
           onSelectRestaurant={function (restaurant: MapMarker): void {
             throw new Error("Function not implemented.");

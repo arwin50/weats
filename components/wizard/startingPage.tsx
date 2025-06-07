@@ -25,7 +25,7 @@ export default function StartingPage() {
 
       <Link
         href="/startingWizard"
-        className="font-playfair sm:-mt-10 px-6 py-3 bg-[#d3d8a3] text-xs sm:text-base text-green-900 rounded-lg shadow-md hover:shadow-lg hover:bg-[#c3d891] transition"
+        className="font-playfair sm:-mt-10 px-8 py-4 bg-[#d3d8a3] text-m sm:text-l text-green-900 rounded-lg shadow-md hover:shadow-lg hover:bg-[#c3d891] transition"
       >
         Let Choosee choose it!
       </Link>
