@@ -57,7 +57,7 @@ export function UserMenu({ className = "" }: { className?: string }) {
 
       <button
         onClick={handleBackToDashboard}
-        className="flex items-center gap-1 sm:gap-2 bg-[#5A9785] hover:bg-[#477769] text-white py-2 px-3 sm:py-3 sm:px-6 rounded-lg shadow-lg transition-colors text-sm sm:text-base"
+        className="flex items-center gap-1 sm:gap-2 bg-[#5A9785] hover:bg-[#477769] text-white py-2 px-3 sm:py-3 sm:px-6 rounded-lg shadow-lg transition-colors text-sm sm:text-base cursor-pointer"
       >
         <ArrowLeft className="h-4 w-4 sm:h-5 sm:w-5" />
         <span className="hidden xs:inline sm:inline">Back to Dashboard</span>

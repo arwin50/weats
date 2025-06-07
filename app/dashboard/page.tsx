@@ -6,9 +6,12 @@ import { RestaurantListOverlay } from "@/components/RestaurantListOverlay";
 import { PreviousPromptOverlay } from "@/components/PreviousPromptOverlay";
 import { RecentlyVisitedOverlay } from "@/components/RecentlyVisitedOverlay";
 import { RestaurantModal } from "@/components/RestaurantModal";
-import { Eye, EyeOff, Book, MapPin, Star } from "lucide-react";
-import { authApi } from "@/lib/redux/slices/authSlice";
+import { Eye, EyeOff } from "lucide-react";
+import { authApi, publicApi } from "@/lib/redux/slices/authSlice";
 import { useAppSelector } from "@/lib/redux/hooks";
+import { FaRedo } from "react-icons/fa";
+import { FaBookOpen, FaMapMarkedAlt, FaUtensils } from "react-icons/fa";
+import { useRouter } from "next/navigation";
 
 interface Restaurant {
   name: string;
@@ -49,6 +52,7 @@ export default function DashboardPage() {
   const [visitedLocations, setVisitedLocations] = useState<MapMarker[]>([]);
   const [isLoadingVisited, setIsLoadingVisited] = useState(false);
   const [visitedError, setVisitedError] = useState<string | null>(null);
+  const router = useRouter();
 
   useEffect(() => {
     // Log user data
@@ -83,7 +87,7 @@ export default function DashboardPage() {
           setIsLoading(true);
           setError(null);
 
-          const response = await authApi.post<ApiResponse>(
+          const response = await publicApi.post<ApiResponse>(
             "/maps/search_places/",
             {
               lat: promptData.locationCoords?.lat || 10.3157,
@@ -113,9 +117,45 @@ export default function DashboardPage() {
             );
             setPlaceMarkers(markers);
           }
-        } catch (error) {
-          console.error("Error fetching restaurants:", error);
-          setError("Failed to fetch restaurants. Please try again.");
+        } catch (error: any) {
+          // Log the full error object
+          console.error("Full error object:", error);
+
+          // Log specific error properties
+          console.error("Error details:", {
+            message: error?.message,
+            status: error?.response?.status,
+            statusText: error?.response?.statusText,
+            data: error?.response?.data,
+            config: {
+              url: error?.config?.url,
+              method: error?.config?.method,
+              data: error?.config?.data,
+            },
+          });
+
+          // Validate required data before showing error
+          const missingData = [];
+          if (!promptData.foodPreference) missingData.push("Food Preference");
+          if (!promptData.dietaryPreference)
+            missingData.push("Dietary Preference");
+          if (!promptData.locationCoords) missingData.push("Location");
+
+          let errorMessage = "Failed to fetch restaurants. ";
+          if (missingData.length > 0) {
+            errorMessage += `Missing required data: ${missingData.join(", ")}`;
+          } else if (error?.response?.data?.detail) {
+            errorMessage += error.response.data.detail;
+          } else if (error?.response?.data?.message) {
+            errorMessage += error.response.data.message;
+          } else if (error?.message) {
+            errorMessage += error.message;
+          } else {
+            errorMessage += "Please try again.";
+          }
+
+          setError(errorMessage);
+
           // Clear data on error
           setPlaceMarkers([]);
           setSelectedRestaurant(null);
@@ -197,8 +237,58 @@ export default function DashboardPage() {
     setSelectedRestaurant(null);
   };
 
+  const startWizard = () => {
+    router.push("/startingWizard");
+  };
+
   return (
     <div>
+      {/* Responsive button row at top left */}
+      <div className="fixed top-4 left-0 z-50 flex gap-2 sm:gap-4 items-center px-2 sm:px-6 py-2 w-full max-w-full overflow-x-auto bg-transparent">
+        {/* Recycle button */}
+        <button
+          onClick={startWizard}
+          className="bg-[#C95C5C] hover:bg-[#b94a4a] text-white rounded-xl px-3 py-2 flex items-center justify-center shadow-md focus:outline-none text-base sm:text-lg"
+          aria-label="Restart Wizard"
+        >
+          <FaRedo size={18} />
+        </button>
+        {/* Toggle overlays button */}
+        <button
+          onClick={() => setIsOverlayVisible((v) => !v)}
+          className="bg-[#E0E0E0] hover:bg-[#cccccc] text-black rounded-xl px-3 py-2 flex items-center justify-center shadow-md focus:outline-none text-base sm:text-lg"
+          aria-label="Toggle overlays"
+        >
+          {isOverlayVisible ? <Eye size={18} /> : <EyeOff size={18} />}
+        </button>
+        {/* Overlay action buttons, only visible when overlays are ON */}
+        {isOverlayVisible && (
+          <>
+            <button
+              onClick={() => setActiveOverlay("restaurant")}
+              className="bg-[#F5E6C8] hover:bg-[#e5d6b8] text-black rounded-xl px-3 py-2 flex items-center gap-1 sm:gap-2 shadow-md focus:outline-none font-semibold text-base sm:text-lg"
+            >
+              <span className="font-bold">Resto List</span>{" "}
+              <FaUtensils size={16} />
+            </button>
+            <button
+              onClick={() => setActiveOverlay("recently")}
+              className="bg-[#FFF396] hover:bg-[#e6e272] text-black rounded-xl px-3 py-2 flex items-center gap-1 sm:gap-2 shadow-md focus:outline-none font-semibold text-base sm:text-lg"
+            >
+              <span className="font-bold">View history</span>{" "}
+              <FaBookOpen size={16} />
+            </button>
+            <button
+              onClick={() => setActiveOverlay("previous")}
+              className="bg-[#B7D3C4] hover:bg-[#a0bfb0] text-black rounded-xl px-3 py-2 flex items-center gap-1 sm:gap-2 shadow-md focus:outline-none font-semibold text-base sm:text-lg"
+            >
+              <span className="font-bold">Suggestions</span>{" "}
+              <FaMapMarkedAlt size={16} />
+            </button>
+          </>
+        )}
+      </div>
+
       {isLoading && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white p-8 rounded-2xl shadow-xl text-center">
@@ -233,47 +323,18 @@ export default function DashboardPage() {
 
       <FoodMap markers={placeMarkers} center={center} />
 
-      <button
-        onClick={toggleOverlayVisibility}
-        className="fixed top-2 left-2 z-50 bg-[#C2C8A4] p-2 rounded shadow text-black hover:bg-[#B0B68F] transition"
-      >
-        {isOverlayVisible ? <Eye size={20} /> : <EyeOff size={20} />}
-      </button>
-
-      {isOverlayVisible && (
-        <div className="fixed z-40 flex flex-row md:flex-col items-center md:items-end gap-3 px-2 md:px-0 md:left-100 md:top-20 transform translate-x-1/2 md:translate-x-0">
-          <div
-            onClick={() => setActiveOverlay("restaurant")}
-            className="w-14 h-14 md:w-30 md:h-20 bg-[#D5DBB5] rounded-full flex items-center justify-center hover:bg-[#BFC59A] cursor-pointer transition"
-          >
-            <Book size={28} className="text-green-900 md:size-8 ml-7" />
-          </div>
-          <div
-            onClick={() => setActiveOverlay("recently")}
-            className="w-14 h-14 md:w-30 md:h-20 bg-[#FFF396] rounded-full flex items-center justify-center hover:bg-[#E6E272] cursor-pointer transition"
-          >
-            <MapPin size={28} className="text-green-900 md:size-8 ml-7" />
-          </div>
-          <div
-            onClick={() => setActiveOverlay("previous")}
-            className="w-14 h-14 md:w-30 md:h-20 bg-[#FF9268] rounded-full flex items-center justify-center hover:bg-[#E57E56] cursor-pointer transition"
-          >
-            <Star size={28} className="text-green-900 md:size-8 ml-7" />
-          </div>
-        </div>
-      )}
-
-      {activeOverlay === "restaurant" && (
+      {isOverlayVisible && activeOverlay === "restaurant" && (
         <RestaurantListOverlay
           restaurants={placeMarkers}
           onSelectRestaurant={handleSelectRestaurant}
-          isVisible={isOverlayVisible}
+          isVisible={activeOverlay === "restaurant"}
+          preferences={promptData}
         />
       )}
-      {activeOverlay === "previous" && (
-        <PreviousPromptOverlay isVisible={isOverlayVisible} />
+      {isOverlayVisible && activeOverlay === "previous" && (
+        <PreviousPromptOverlay isVisible={activeOverlay === "previous"} />
       )}
-      {activeOverlay === "recently" && (
+      {isOverlayVisible && activeOverlay === "recently" && (
         <RecentlyVisitedOverlay
           isVisible={isOverlayVisible}
           recentlyVisited={visitedLocations}
