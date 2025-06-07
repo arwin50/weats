@@ -73,6 +73,12 @@ export const FoodMap = ({ markers, center }: MapProps) => {
         center={mapCenter}
         zoom={14}
         onLoad={onMapLoad}
+        options={{
+          fullscreenControl: false, // ✅ disables fullscreen button
+          mapTypeControl: false, // (optional) disables Map/Satellite toggle
+          zoomControl: true, // (optional) keep this true if you still want zoom
+          streetViewControl: false, // (optional) hides Pegman/street view icon
+        }}
       >
         {/* Center marker */}
         <Marker

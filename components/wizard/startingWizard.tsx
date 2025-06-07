@@ -1,12 +1,15 @@
 "use client"
 
-import { useState } from "react"
-import Image from "next/image"
-import logo from "@/assets/images/logo.svg"
-import StepOne from "./wizard-layout/wizard-steps/step-one"
-import StepTwo from "./wizard-layout/wizard-steps/step-two"
-import StepThree from "./wizard-layout/wizard-steps/step-three"
-import StepFour from "./wizard-layout/wizard-steps/step-four"
+import { useState } from "react";
+import Image from "next/image";
+import logo from "@/assets/images/logo.svg";
+import StepOne from "./wizard-layout/wizard-steps/step-one";
+import StepTwo from "./wizard-layout/wizard-steps/step-two";
+import StepThree from "./wizard-layout/wizard-steps/step-three";
+import StepFour from "./wizard-layout/wizard-steps/step-four";
+import { useRouter } from "next/navigation";
+import axios from "axios";
+
 
 interface FormData {
   maxPrice: number
@@ -17,7 +20,8 @@ interface FormData {
 }
 
 export default function StartingWizardRefactored() {
-  const [currentStep, setCurrentStep] = useState(1)
+  const router = useRouter();
+  const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState<FormData>({
     maxPrice: 75,
     foodPreference: "Surprise me, Choosee!",
@@ -25,15 +29,31 @@ export default function StartingWizardRefactored() {
     locationEnabled: false,
   })
 
-  const handleNext = () => {
+  const handleNext = async () => {
     if (currentStep < 4) {
       setCurrentStep(currentStep + 1)
     } else {
-      console.log("Form Data:", formData)
-      console.log("Max Price:", formData.maxPrice)
-      console.log("Food Preference:", formData.foodPreference)
-      console.log("Dietary Preference:", formData.dietaryPreference)
-      console.log("Location Enabled:", formData.locationEnabled)
+      try {
+        // Format the data according to the required structure
+        const formattedData = {
+          lat: formData.locationCoords?.lat || 10.3157,
+          lng: formData.locationCoords?.lng || 123.8854,
+          preferences: {
+            food_preference: formData.foodPreference,
+            dietary_preference: formData.dietaryPreference,
+            max_price: formData.maxPrice,
+          },
+        };
+
+        // Store the formatted data in localStorage
+        localStorage.setItem(
+          "wizardPreferences",
+          JSON.stringify(formattedData)
+        );
+        router.replace("/dashboard");
+      } catch (error) {
+        console.error("Error submitting form:", error);
+      }
     }
   }
 
