@@ -8,7 +8,6 @@ import StepTwo from "./wizard-layout/wizard-steps/step-two";
 import StepThree from "./wizard-layout/wizard-steps/step-three";
 import StepFour from "./wizard-layout/wizard-steps/step-four";
 import { useRouter } from "next/navigation";
-import axios from "axios";
 
 interface FormData {
   maxPrice: number;

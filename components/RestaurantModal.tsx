@@ -5,6 +5,7 @@ import LocationOnIcon from "@mui/icons-material/LocationOn";
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import PlaceIcon from "@mui/icons-material/Place";
 import CloseIcon from "@mui/icons-material/Close";
+import Image from "next/image";
 
 interface RestaurantModalProps {
   restaurant: MapMarker | null;
@@ -26,11 +27,23 @@ export const RestaurantModal = ({
 
   return (
     <div className="fixed top-15 right-5 max-h-[85%] w-[350px] bg-[#FEF5E3] border-10 border-[#D5DBB5] shadow-lg rounded-2xl z-100 overflow-y-auto text-black custom-scrollbar">
-      {/* Image placeholder area */}
-      <div className="relative h-30 bg-gray-300">
+      {/* Image area */}
+      <div className="relative h-48 w-full">
+        {restaurant.photo_url ? (
+          <Image
+            src={restaurant.photo_url}
+            alt={restaurant.name}
+            fill
+            className="object-cover rounded-t-2xl"
+          />
+        ) : (
+          <div className="h-full w-full bg-gray-300 rounded-t-2xl flex items-center justify-center">
+            <span className="text-gray-500">No image available</span>
+          </div>
+        )}
         <button
           onClick={onClose}
-          className="absolute top-3 right-3 w-5 h-5 bg-black bg-opacity-50 text-white rounded-full flex items-center justify-center hover:bg-opacity-70 transition-colors"
+          className="absolute top-3 right-3 w-8 h-8 bg-black bg-opacity-50 text-white rounded-full flex items-center justify-center hover:bg-opacity-70 transition-colors"
         >
           <CloseIcon fontSize="small" />
         </button>

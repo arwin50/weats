@@ -1,4 +1,4 @@
-import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
+import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
 import axios from "axios";
 
 export const api = axios.create({
@@ -21,6 +21,9 @@ export const login = createAsyncThunk(
         password,
       });
       const { accessToken, refreshToken, user } = response.data;
+      // Store tokens in localStorage
+      localStorage.setItem("accessToken", accessToken);
+      localStorage.setItem("refreshToken", refreshToken);
       return { user, accessToken, refreshToken };
     } catch (error: any) {
       return thunkAPI.rejectWithValue(
@@ -59,19 +62,29 @@ export const clearError = () => (dispatch: any) => {
 };
 
 interface AuthState {
-  user: any;
+  isAuthenticated: boolean;
+  user: any | null;
+  hasUsedApp: boolean;
   accessToken: string | null;
   refreshToken: string | null;
-  isAuthenticated: boolean;
   isLoading: boolean;
   error: string | null;
 }
 
 const initialState: AuthState = {
+  isAuthenticated:
+    typeof window !== "undefined"
+      ? !!localStorage.getItem("accessToken")
+      : false,
   user: null,
-  accessToken: null,
-  refreshToken: null,
-  isAuthenticated: false,
+  hasUsedApp:
+    typeof window !== "undefined"
+      ? localStorage.getItem("hasUsedApp") === "true"
+      : false,
+  accessToken:
+    typeof window !== "undefined" ? localStorage.getItem("accessToken") : null,
+  refreshToken:
+    typeof window !== "undefined" ? localStorage.getItem("refreshToken") : null,
   isLoading: false,
   error: null,
 };
@@ -80,11 +93,27 @@ const authSlice = createSlice({
   name: "auth",
   initialState,
   reducers: {
+    setCredentials: (
+      state,
+      action: PayloadAction<{ user: any; token: string }>
+    ) => {
+      const { user, token } = action.payload;
+      state.user = user;
+      state.isAuthenticated = true;
+      state.accessToken = token;
+      localStorage.setItem("accessToken", token);
+    },
     logout: (state) => {
       state.user = null;
+      state.isAuthenticated = false;
       state.accessToken = null;
       state.refreshToken = null;
-      state.isAuthenticated = false;
+      localStorage.removeItem("accessToken");
+      localStorage.removeItem("refreshToken");
+    },
+    markAppAsUsed: (state) => {
+      state.hasUsedApp = true;
+      localStorage.setItem("hasUsedApp", "true");
     },
     setError: (state, action) => {
       state.error = action.payload;
@@ -104,11 +133,17 @@ const authSlice = createSlice({
         state.refreshToken = action.payload.refreshToken;
         state.isAuthenticated = true;
         state.error = null;
+        // Store tokens in localStorage
+        localStorage.setItem("accessToken", action.payload.accessToken);
+        localStorage.setItem("refreshToken", action.payload.refreshToken);
       })
       .addCase(login.rejected, (state, action) => {
         state.isLoading = false;
         state.error = action.payload as string;
         state.isAuthenticated = false;
+        // Clear tokens from localStorage on failed login
+        localStorage.removeItem("accessToken");
+        localStorage.removeItem("refreshToken");
       })
 
       // Register
@@ -118,11 +153,6 @@ const authSlice = createSlice({
       })
       .addCase(register.fulfilled, (state, action) => {
         state.isLoading = false;
-        // If backend returns user info and tokens, you can assign here:
-        // state.user = action.payload.user;
-        // state.accessToken = action.payload.accessToken;
-        // state.refreshToken = action.payload.refreshToken;
-        // state.isAuthenticated = true;
         state.error = null;
       })
       .addCase(register.rejected, (state, action) => {
@@ -132,5 +162,6 @@ const authSlice = createSlice({
   },
 });
 
-export const { logout, setError } = authSlice.actions;
+export const { setCredentials, logout, markAppAsUsed, setError } =
+  authSlice.actions;
 export default authSlice.reducer;

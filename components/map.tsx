@@ -10,6 +10,7 @@ import {
 import { decode } from "@googlemaps/polyline-codec";
 import { RestaurantModal } from "./RestaurantModal";
 import { LoadingSpinner } from "./LoadingSpinner";
+import axios from "axios";
 
 const containerStyle = {
   width: "100%",
@@ -41,6 +42,7 @@ export interface MapMarker {
   description?: string;
   recommendation_reason?: string;
   rank?: number;
+  photo_url?: string;
 }
 
 interface MapProps {
@@ -67,57 +69,9 @@ export const FoodMap = ({ markers, center }: MapProps) => {
     mapRef.current = map;
   }, []);
 
-  const fetchRoute = async (
-    origin: google.maps.LatLngLiteral,
-    destination: google.maps.LatLngLiteral
-  ) => {
-    try {
-      const response = await fetch(
-        "https://routes.googleapis.com/directions/v2:computeRoutes",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "X-Goog-Api-Key": process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || "",
-            "X-Goog-FieldMask":
-              "routes.legs.distanceMeters,routes.legs.duration,routes.route.polyline.encodedPolyline",
-          },
-          body: JSON.stringify({
-            origin: { location: { latLng: origin } },
-            destination: { location: { latLng: destination } },
-            travelMode: "DRIVE",
-          }),
-        }
-      );
-
-      const data = await response.json();
-      const route = data.routes?.[0];
-      const encoded = route?.route?.polyline?.encodedPolyline;
-      const leg = route?.legs?.[0];
-
-      if (encoded) {
-        const decodedPath = decode(encoded).map(([lat, lng]) => ({ lat, lng }));
-        setRoutePath(decodedPath);
-      }
-
-      if (leg) {
-        const km = (leg.distanceMeters / 1000).toFixed(1);
-        const mins = Math.round(leg.duration?.seconds / 60);
-        setTravelInfo({
-          distanceText: `${km} km`,
-          durationText: `${mins} mins`,
-        });
-      }
-    } catch (error) {
-      console.error("Error fetching route", error);
-    }
-  };
-
   const handleMarkerClick = (marker: MapMarker) => {
     setSelectedRestaurant(marker);
     const destination = { lat: marker.lat, lng: marker.lng };
-
-    fetchRoute(mapCenter, destination);
 
     if (mapRef.current) {
       mapRef.current.panTo(destination);

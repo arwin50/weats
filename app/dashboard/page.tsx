@@ -5,7 +5,8 @@ import { FoodMap, MapMarker } from "@/components/map";
 import { RestaurantListOverlay } from "@/components/RestaurantListOverlay";
 import { RestaurantModal } from "@/components/RestaurantModal";
 import { Eye, EyeOff } from "lucide-react";
-import { api } from "@/lib/redux/slices/authSlice";
+import { api, markAppAsUsed } from "@/lib/redux/slices/authSlice";
+import { useAppDispatch } from "@/lib/redux/hooks";
 
 interface Restaurant {
   name: string;
@@ -19,6 +20,7 @@ interface Restaurant {
   description?: string;
   recommendation_reason?: string;
   rank?: number;
+  photo_url?: string;
 }
 
 interface ApiResponse {
@@ -37,6 +39,7 @@ interface WizardPreferences {
 }
 
 export default function DashboardPage() {
+  const dispatch = useAppDispatch();
   const [placeMarkers, setPlaceMarkers] = useState<MapMarker[]>([]);
   const [center, setCenter] = useState({ lat: 10.3157, lng: 123.8854 });
   const [selectedRestaurant, setSelectedRestaurant] =
@@ -46,6 +49,13 @@ export default function DashboardPage() {
   const [preferences, setPreferences] = useState<WizardPreferences | null>(
     null
   );
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    // Mark the app as used when the dashboard is loaded
+    dispatch(markAppAsUsed());
+  }, [dispatch]);
 
   useEffect(() => {
     // Load preferences from localStorage
@@ -64,6 +74,13 @@ export default function DashboardPage() {
     const fetchRestaurants = async () => {
       if (preferences) {
         try {
+          // Clear previous data
+          setPlaceMarkers([]);
+          setSelectedRestaurant(null);
+          setIsModalOpen(false);
+          setIsLoading(true);
+          setError(null);
+
           const response = await api.post<ApiResponse>("/maps/search_places/", {
             lat: preferences.lat,
             lng: preferences.lng,
@@ -73,6 +90,7 @@ export default function DashboardPage() {
           if (response.data.restaurants) {
             const markers: MapMarker[] = response.data.restaurants.map(
               (restaurant) => ({
+                id: restaurant.name,
                 name: restaurant.name,
                 address: restaurant.address,
                 lat: restaurant.lat,
@@ -81,12 +99,20 @@ export default function DashboardPage() {
                 price_level: restaurant.price_level,
                 types: restaurant.types,
                 rank: restaurant.rank,
+                photo_url: restaurant.photo_url,
               })
             );
             setPlaceMarkers(markers);
           }
         } catch (error) {
           console.error("Error fetching restaurants:", error);
+          setError("Failed to fetch restaurants. Please try again.");
+          // Clear data on error
+          setPlaceMarkers([]);
+          setSelectedRestaurant(null);
+          setIsModalOpen(false);
+        } finally {
+          setIsLoading(false);
         }
       }
     };
@@ -105,6 +131,38 @@ export default function DashboardPage() {
 
   return (
     <div>
+      {isLoading && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white p-8 rounded-2xl shadow-xl text-center">
+            <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-[#5A9785] mx-auto mb-4"></div>
+            <h2 className="text-xl font-semibold text-gray-800 mb-2">
+              Finding the best restaurants...
+            </h2>
+            <p className="text-gray-600">
+              Please wait while we search for amazing places near you
+            </p>
+          </div>
+        </div>
+      )}
+
+      {error && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white p-8 rounded-2xl shadow-xl text-center">
+            <div className="text-red-500 text-4xl mb-4">⚠️</div>
+            <h2 className="text-xl font-semibold text-gray-800 mb-2">
+              Oops! Something went wrong
+            </h2>
+            <p className="text-gray-600 mb-4">{error}</p>
+            <button
+              onClick={() => window.location.reload()}
+              className="bg-[#5A9785] text-white px-6 py-2 rounded-full hover:bg-[#48796B] transition-colors"
+            >
+              Try Again
+            </button>
+          </div>
+        </div>
+      )}
+
       <FoodMap markers={placeMarkers} center={center} />
 
       <button
