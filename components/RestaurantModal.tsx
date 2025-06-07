@@ -10,12 +10,17 @@ interface RestaurantModalProps {
   restaurant: MapMarker | null;
   isOpen: boolean;
   onClose: () => void;
+  travelInfo?: {
+    distanceText: string;
+    durationText: string;
+  } | null;
 }
 
 export const RestaurantModal = ({
   restaurant,
   isOpen,
   onClose,
+  travelInfo,
 }: RestaurantModalProps) => {
   if (!isOpen || !restaurant) return null;
 
@@ -57,16 +62,12 @@ export const RestaurantModal = ({
         )}
 
         {/* Distance and time info */}
-        <div className="flex items-center gap-4 mb-2 text-gray-700">
-          <div className="flex items-center gap-1">
-            <LocationOnIcon className="text-sm" fontSize="small" />
-            <span className="text-sm">0.3km</span>
+        {travelInfo && (
+          <div className="text-sm text-gray-600 mt-2">
+            <p>🚗 Distance: {travelInfo.distanceText}</p>
+            <p>⏱ Duration: {travelInfo.durationText}</p>
           </div>
-          <div className="flex items-center gap-1">
-            <AccessTimeIcon className="text-sm" fontSize="small" />
-            <span className="text-sm">15 mins</span>
-          </div>
-        </div>
+        )}
 
         {/* Restaurant Address */}
         <div className="flex items-start gap-2 mb-2">

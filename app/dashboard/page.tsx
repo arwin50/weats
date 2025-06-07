@@ -18,6 +18,7 @@ interface Restaurant {
   types?: string[];
   description?: string;
   recommendation_reason?: string;
+  rank?: number;
 }
 
 interface ApiResponse {
@@ -79,6 +80,7 @@ export default function DashboardPage() {
                 rating: restaurant.rating,
                 price_level: restaurant.price_level,
                 types: restaurant.types,
+                rank: restaurant.rank,
               })
             );
             setPlaceMarkers(markers);
