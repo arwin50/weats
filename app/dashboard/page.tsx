@@ -3,8 +3,10 @@
 import { useEffect, useState } from "react";
 import { FoodMap, MapMarker } from "@/components/map";
 import { RestaurantListOverlay } from "@/components/RestaurantListOverlay";
+import { PreviousPromptOverlay } from "@/components/PreviousPromptOverlay";
+import { RecentlyVisitedOverlay } from "@/components/RecentlyVisitedOverlay";
 import { RestaurantModal } from "@/components/RestaurantModal";
-import { Eye, EyeOff } from "lucide-react";
+import { Eye, EyeOff, Book, MapPin, Star } from "lucide-react";
 import { api, markAppAsUsed } from "@/lib/redux/slices/authSlice";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { useRouter } from "next/navigation";
@@ -39,6 +41,14 @@ export default function DashboardPage() {
     useState<MapMarker | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isOverlayVisible, setIsOverlayVisible] = useState(true);
+  const [activeOverlay, setActiveOverlay] = useState<
+    "restaurant" | "previous" | "recently" | null
+  >("restaurant");
+  const [recentlyVisited, setRecentlyVisited] = useState<MapMarker[]>([]);
+
+  const [preferences, setPreferences] = useState<WizardPreferences | null>(
+    null
+  );
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -126,10 +136,18 @@ export default function DashboardPage() {
   const handleSelectRestaurant = (restaurant: MapMarker) => {
     setSelectedRestaurant(restaurant);
     setIsModalOpen(true);
+
+    // Add to recently visited, avoiding duplicates
+    setRecentlyVisited((prev) => {
+      const exists = prev.find((r) => r.name === restaurant.name);
+      if (exists) return prev;
+      return [restaurant, ...prev].slice(0, 10); // limit to 10
+    });
   };
 
   const toggleOverlayVisibility = () => {
     setIsOverlayVisible((prev) => !prev);
+    setSelectedRestaurant(null);
   };
 
   return (
@@ -169,20 +187,54 @@ export default function DashboardPage() {
       <FoodMap markers={placeMarkers} center={center} />
 
       <button
-        onClick={() => {
-          toggleOverlayVisibility();
-          setSelectedRestaurant(null);
-        }}
-        className="fixed top-4 left-4 z-30 bg-[#D5DBB5] p-2 rounded shadow text-black hover:bg-[#C2C8A4] transition"
+        onClick={toggleOverlayVisibility}
+        className="fixed top-2 left-2 z-50 bg-[#C2C8A4] p-2 rounded shadow text-black hover:bg-[#B0B68F] transition"
       >
         {isOverlayVisible ? <Eye size={20} /> : <EyeOff size={20} />}
       </button>
 
-      <RestaurantListOverlay
-        restaurants={placeMarkers}
-        onSelectRestaurant={handleSelectRestaurant}
-        isVisible={isOverlayVisible}
-      />
+      {isOverlayVisible && (
+        <div className="fixed z-40 flex flex-row md:flex-col items-center md:items-end gap-3 px-2 md:px-0 md:left-100 md:top-20 transform translate-x-1/2 md:translate-x-0">
+          <div
+            onClick={() => setActiveOverlay("restaurant")}
+            className="w-14 h-14 md:w-30 md:h-20 bg-[#D5DBB5] rounded-full flex items-center justify-center hover:bg-[#BFC59A] cursor-pointer transition"
+          >
+            <Book size={28} className="text-green-900 md:size-8 ml-7" />
+          </div>
+          <div
+            onClick={() => setActiveOverlay("recently")}
+            className="w-14 h-14 md:w-30 md:h-20 bg-[#FFF396] rounded-full flex items-center justify-center hover:bg-[#E6E272] cursor-pointer transition"
+          >
+            <MapPin size={28} className="text-green-900 md:size-8 ml-7" />
+          </div>
+          <div
+            onClick={() => setActiveOverlay("previous")}
+            className="w-14 h-14 md:w-30 md:h-20 bg-[#FF9268] rounded-full flex items-center justify-center hover:bg-[#E57E56] cursor-pointer transition"
+          >
+            <Star size={28} className="text-green-900 md:size-8 ml-7" />
+          </div>
+        </div>
+      )}
+
+      {activeOverlay === "restaurant" && (
+        <RestaurantListOverlay
+          restaurants={placeMarkers}
+          onSelectRestaurant={handleSelectRestaurant}
+          isVisible={isOverlayVisible}
+        />
+      )}
+      {activeOverlay === "previous" && (
+        <PreviousPromptOverlay isVisible={isOverlayVisible} />
+      )}
+      {activeOverlay === "recently" && (
+        <RecentlyVisitedOverlay
+          isVisible={isOverlayVisible}
+          recentlyVisited={recentlyVisited}
+          onSelectRestaurant={function (restaurant: MapMarker): void {
+            throw new Error("Function not implemented.");
+          }}
+        />
+      )}
 
       <RestaurantModal
         restaurant={selectedRestaurant}
