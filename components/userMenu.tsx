@@ -29,10 +29,17 @@ export function UserMenu({ className = "" }: { className?: string }) {
     router.push("/dashboard");
   };
 
-  const handleLogout = () => {
-    dispatch(logout());
-    setOpen(false);
-    router.push("/");
+  const handleLogout = async () => {
+    try {
+      await dispatch(logout()).unwrap();
+      setOpen(false);
+      router.push("/");
+    } catch (error) {
+      console.error("Logout failed:", error);
+      // Still close the menu and redirect even if logout fails
+      setOpen(false);
+      router.push("/");
+    }
   };
 
   return (
