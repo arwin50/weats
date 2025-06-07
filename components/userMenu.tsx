@@ -1,38 +1,45 @@
-"use client"
-import { useState, useRef, useEffect } from "react"
-import { useRouter } from "next/navigation"
-import { User, LogOut, LogIn, UserPlus, ArrowLeft } from "lucide-react"
+"use client";
+import { useState, useRef, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { User, LogOut, LogIn, UserPlus, ArrowLeft } from "lucide-react";
 
 interface UserMenuProps {
-  isLoggedIn?: boolean
-  onLogout?: () => void
-  className?: string
+  isLoggedIn?: boolean;
+  onLogout?: () => void;
+  className?: string;
 }
 
-export function UserMenu({ isLoggedIn = false, onLogout, className = "" }: UserMenuProps) {
-  const [open, setOpen] = useState(false)
-  const menuRef = useRef<HTMLDivElement>(null)
-  const router = useRouter()
+export function UserMenu({
+  isLoggedIn = false,
+  onLogout,
+  className = "",
+}: UserMenuProps) {
+  const [open, setOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+  const router = useRouter();
 
   // Close dropdown on outside click
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
-        setOpen(false)
+        setOpen(false);
       }
     }
-    document.addEventListener("mousedown", handleClickOutside)
+    document.addEventListener("mousedown", handleClickOutside);
     return () => {
-      document.removeEventListener("mousedown", handleClickOutside)
-    }
-  }, [])
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
 
   const handleBackToDashboard = () => {
-    router.push("/dashboard")
-  }
+    router.push("/dashboard");
+  };
 
   return (
-    <div className="fixed top-4 left-4 sm:top-6 sm:left-6 z-50 flex items-center gap-2 sm:gap-4" ref={menuRef}>
+    <div
+      className="fixed top-4 left-4 sm:top-6 sm:left-6 z-50 flex items-center gap-2 sm:gap-4"
+      ref={menuRef}
+    >
       <button
         onClick={() => setOpen(!open)}
         className={`cursor-pointer h-12 w-12 sm:h-16 sm:w-16 rounded-full bg-[#1BCC98] hover:bg-[#129C73] text-white shadow-lg flex items-center justify-center ${className}`}
@@ -43,7 +50,7 @@ export function UserMenu({ isLoggedIn = false, onLogout, className = "" }: UserM
 
       <button
         onClick={handleBackToDashboard}
-        className="flex items-center gap-1 sm:gap-2 bg-[#5A9785] hover:bg-[#477769] text-white py-2 px-3 sm:py-3 sm:px-6 rounded-lg shadow-lg transition-colors text-sm sm:text-base"
+        className="flex items-center gap-1 sm:gap-2 bg-[#5A9785] hover:bg-[#477769] text-white py-2 px-3 sm:py-3 sm:px-6 rounded-lg shadow-lg transition-colors text-sm sm:text-base cursor-pointer"
       >
         <ArrowLeft className="h-4 w-4 sm:h-5 sm:w-5" />
         <span className="hidden xs:inline sm:inline">Back to Dashboard</span>
@@ -56,8 +63,8 @@ export function UserMenu({ isLoggedIn = false, onLogout, className = "" }: UserM
             <>
               <div
                 onClick={() => {
-                  setOpen(false)
-                  router.push("/login")
+                  setOpen(false);
+                  router.push("/login");
                 }}
                 className="flex items-center cursor-pointer py-3 px-4 hover:bg-[#477769] rounded-lg"
               >
@@ -66,8 +73,8 @@ export function UserMenu({ isLoggedIn = false, onLogout, className = "" }: UserM
               </div>
               <div
                 onClick={() => {
-                  setOpen(false)
-                  router.push("/register")
+                  setOpen(false);
+                  router.push("/register");
                 }}
                 className="flex items-center cursor-pointer py-3 px-4 hover:bg-[#477769] rounded-lg"
               >
@@ -78,8 +85,8 @@ export function UserMenu({ isLoggedIn = false, onLogout, className = "" }: UserM
           ) : (
             <div
               onClick={() => {
-                onLogout?.()
-                setOpen(false)
+                onLogout?.();
+                setOpen(false);
               }}
               className="flex items-center cursor-pointer py-3 px-4 hover:bg-[#477769] rounded-lg"
             >
@@ -90,5 +97,5 @@ export function UserMenu({ isLoggedIn = false, onLogout, className = "" }: UserM
         </div>
       )}
     </div>
-  )
+  );
 }

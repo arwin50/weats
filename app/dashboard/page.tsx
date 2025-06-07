@@ -107,7 +107,6 @@ export default function DashboardPage() {
         } catch (error) {
           console.error("Error fetching restaurants:", error);
           setError("Failed to fetch restaurants. Please try again.");
-          // Clear data on error
           setPlaceMarkers([]);
           setSelectedRestaurant(null);
           setIsModalOpen(false);
