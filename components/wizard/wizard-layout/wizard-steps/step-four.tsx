@@ -151,7 +151,10 @@ export default function StepFour({
       <WizardStepLayout
         title="Almost here! We just need one last thing from you..."
         subtitle="Just pick a location, we'll handle the rest!"
-        onBack={() => setShowMap(false)}
+        onBack={() => {
+          setShowMap(false);
+          onBack?.();
+        }}
         onNext={() => {
           if (hasChosenLocation) {
             onNext();
@@ -163,6 +166,9 @@ export default function StepFour({
         wide={true}
       >
         {/* Mobile-first responsive layout */}
+        <div className="-mt-2 text-sm text-center text-gray-700 rounded-md p-2">
+          You can search a location or drag the map marker to pick a place.
+        </div>
         <div className="flex flex-col lg:flex-row gap-4 lg:gap-6 h-[70vh] lg:h-[60vh]">
           {/* Sidebar - Full width on mobile, fixed width on desktop */}
           <div className="w-full lg:w-80 xl:w-96 h-64 lg:h-full order-2 lg:order-1">
@@ -203,7 +209,10 @@ export default function StepFour({
     <WizardStepLayout
       title="Almost here! We just need one last thing from you..."
       subtitle="Just pick a location, we'll handle the rest!"
-      onBack={() => setShowMap(false)}
+      onBack={() => {
+        setShowMap(false);
+        onBack?.();
+      }}
       onNext={() => {
         if (hasChosenLocation) {
           onNext();
