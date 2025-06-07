@@ -23,6 +23,7 @@ interface Restaurant {
   recommendation_reason?: string;
   rank?: number;
   photo_url?: string;
+  id?: string;
 }
 
 interface ApiResponse {
@@ -45,6 +46,9 @@ export default function DashboardPage() {
   const [recentlyVisited, setRecentlyVisited] = useState<MapMarker[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [visitedLocations, setVisitedLocations] = useState<MapMarker[]>([]);
+  const [isLoadingVisited, setIsLoadingVisited] = useState(false);
+  const [visitedError, setVisitedError] = useState<string | null>(null);
 
   useEffect(() => {
     // Log user data
@@ -95,7 +99,7 @@ export default function DashboardPage() {
           if (response.data.restaurants) {
             const markers: MapMarker[] = response.data.restaurants.map(
               (restaurant) => ({
-                id: restaurant.name,
+                id: restaurant.id,
                 name: restaurant.name,
                 address: restaurant.address,
                 lat: restaurant.lat,
@@ -140,6 +144,41 @@ export default function DashboardPage() {
     promptData.locationCoords,
     promptData.maxPrice,
   ]);
+
+  useEffect(() => {
+    const fetchVisitedLocations = async () => {
+      try {
+        setIsLoadingVisited(true);
+        const response = await authApi.get("/visited/");
+        const locations: MapMarker[] = response.data.visited_locations.map(
+          (location: any) => ({
+            id: location.id?.toString() || "", // Ensure id is always a string
+            name: location.name || "",
+            address: location.address || "",
+            lat: location.lat || 0,
+            lng: location.lng || 0,
+            rating: location.rating,
+            user_ratings_total: location.user_ratings_total,
+            price_level: location.price_level,
+            types: location.types || [],
+            description: location.description,
+            recommendation_reason: location.recommendation_reason,
+            photo_url: location.photo_url,
+          })
+        );
+        setVisitedLocations(locations);
+      } catch (error) {
+        console.error("Error fetching visited locations:", error);
+        setVisitedError("Failed to load visited locations");
+      } finally {
+        setIsLoadingVisited(false);
+      }
+    };
+
+    if (authData.isAuthenticated) {
+      fetchVisitedLocations();
+    }
+  }, [authData.isAuthenticated]);
 
   const handleSelectRestaurant = (restaurant: MapMarker) => {
     setSelectedRestaurant(restaurant);
@@ -237,10 +276,10 @@ export default function DashboardPage() {
       {activeOverlay === "recently" && (
         <RecentlyVisitedOverlay
           isVisible={isOverlayVisible}
-          recentlyVisited={recentlyVisited}
-          onSelectRestaurant={function (restaurant: MapMarker): void {
-            throw new Error("Function not implemented.");
-          }}
+          recentlyVisited={visitedLocations}
+          onSelectRestaurant={handleSelectRestaurant}
+          isLoading={isLoadingVisited}
+          error={visitedError}
         />
       )}
 

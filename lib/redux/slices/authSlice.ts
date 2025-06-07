@@ -36,18 +36,23 @@ authApi.interceptors.response.use(
   (response) => response,
   async (error) => {
     const originalRequest = error.config;
-    if (error.response.status === 401 && !originalRequest._retry) {
+    if (error.response?.status === 401 && !originalRequest._retry) {
+      console.log("Token expired, attempting refresh...");
       originalRequest._retry = true;
       try {
         const refreshToken = localStorage.getItem("refresh_token");
+        console.log("Refresh token found:", !!refreshToken);
         const response = await publicApi.post("/users/refresh", {
           refresh: refreshToken,
         });
         const { access } = response.data;
+        console.log("New access token received");
         localStorage.setItem("access_token", access);
         originalRequest.headers.Authorization = `Bearer ${access}`;
+        console.log("Retrying original request with new token");
         return authApi(originalRequest);
       } catch (refreshError) {
+        console.error("Token refresh failed:", refreshError);
         return Promise.reject(refreshError);
       }
     }

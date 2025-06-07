@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import type { MapMarker } from "./map";
 import PlaceIcon from "@mui/icons-material/Place";
 import CloseIcon from "@mui/icons-material/Close";
@@ -16,6 +16,7 @@ interface RestaurantModalProps {
     distanceText: string;
     durationText: string;
   } | null;
+  onVisitedUpdate?: () => void;
 }
 
 export const RestaurantModal = ({
@@ -23,32 +24,62 @@ export const RestaurantModal = ({
   isOpen,
   onClose,
   travelInfo,
+  onVisitedUpdate,
 }: RestaurantModalProps) => {
+  const { user } = useAppSelector((state) => state.auth);
   const [isVisited, setIsVisited] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const accessToken = useAppSelector((state) => state.auth.accessToken);
+
+  useEffect(() => {
+    const checkVisitedStatus = async () => {
+      if (!restaurant) return;
+      try {
+        const response = await authApi.post("/visited/check_visited/", {
+          location: {
+            name: restaurant.name,
+            address: restaurant.address,
+          },
+        });
+        setIsVisited(response.data.is_visited);
+      } catch (err) {
+        console.error("Error checking visited status:", err);
+      }
+    };
+
+    if (isOpen && restaurant) {
+      checkVisitedStatus();
+    }
+  }, [isOpen, restaurant]);
+
   const handleToggleVisited = async () => {
-    console.log(accessToken);
     if (!restaurant) return;
 
     try {
       setIsLoading(true);
       setError(null);
-      const response = await authApi.post(
-        "/visited/",
-        {
-          location_id: restaurant.id,
-          notes: `Visited ${restaurant.name}`,
+      const response = await authApi.post("/visited/toggle_visited/", {
+        location: {
+          name: restaurant.name,
+          address: restaurant.address,
+          lat: restaurant.lat,
+          lng: restaurant.lng,
+          rating: restaurant.rating,
+          user_ratings_total: restaurant.user_ratings_total,
+          price_level: restaurant.price_level,
+          types: restaurant.types,
+          description: restaurant.description,
+          recommendation_reason: restaurant.recommendation_reason,
+          photo_url: restaurant.photo_url,
         },
-        {
-          headers: {
-            Authorization: `Bearer ${accessToken}`, // Replace accessToken with your actual token variable
-          },
-        }
-      );
+        notes: `Visited ${restaurant.name}`,
+      });
 
       setIsVisited(response.data.is_visited);
+
+      if (onVisitedUpdate) {
+        onVisitedUpdate();
+      }
     } catch (err) {
       console.error("Error toggling visited status:", err);
       setError("Failed to update visited status. Please try again.");
@@ -84,7 +115,7 @@ export const RestaurantModal = ({
       </div>
 
       {/* Content area */}
-      <div className="p-6 bg-[#FEF5E3]">
+      <div className="p-4">
         {/* Restaurant name and status */}
         <div className="flex justify-between items-start mb-2">
           <h2 className="text-xl text-black font-playfair font-bold leading-tight">
@@ -140,7 +171,7 @@ export const RestaurantModal = ({
         )}
 
         {/* About and Recommendations */}
-        <div className="space-y-4 mb-4">
+        <div className="space-y-4">
           {restaurant.description && (
             <div className="border-t border-gray-200 pt-4">
               <h3 className="font-semibold mb-2">About</h3>
@@ -175,7 +206,7 @@ export const RestaurantModal = ({
               : "bg-[#5A9785] hover:bg-[#48796B]"
           } text-white py-2 px-4 rounded-full font-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed`}
         >
-          {isLoading ? (
+          {user && isLoading ? (
             <span className="flex items-center justify-center">
               <div className="animate-spin rounded-full h-5 w-5 border-t-2 border-b-2 border-white mr-2"></div>
               Updating...
