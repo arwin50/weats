@@ -7,10 +7,7 @@ import {
   Marker,
   Polyline,
 } from "@react-google-maps/api";
-import { decode } from "@googlemaps/polyline-codec";
 import { RestaurantModal } from "./RestaurantModal";
-import { LoadingSpinner } from "./LoadingSpinner";
-import axios from "axios";
 
 const containerStyle = {
   width: "100%",
@@ -88,7 +85,6 @@ export const FoodMap = ({ markers, center }: MapProps) => {
   };
 
   if (loadError) return <div>Error loading maps</div>;
-  if (!isLoaded) return <LoadingSpinner />;
 
   return (
     <div className="relative w-full h-full">
