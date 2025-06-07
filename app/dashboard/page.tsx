@@ -79,18 +79,11 @@ export default function DashboardPage() {
   return (
     <div>
       <FoodMap markers={placeMarkers} center={center} />
-
-      <button
-        onClick={toggleOverlayVisibility}
-        className="absolute top-4 left-4 z-50 bg-[#D5DBB5] p-2 rounded shadow text-black hover:bg-[#C2C8A4] transition"
-      >
-        {isOverlayVisible ? <Eye size={20} /> : <EyeOff size={20} />}
-      </button>
-
       <RestaurantListOverlay
         restaurants={placeMarkers}
         onSelectRestaurant={handleSelectRestaurant}
         isVisible={isOverlayVisible}
+        toggleOverlayVisibility={toggleOverlayVisibility}
       />
 
       <RestaurantModal
