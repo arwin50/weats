@@ -1,11 +1,12 @@
 "use client";
 
+import { useState } from "react";
 import type { MapMarker } from "./map";
-import LocationOnIcon from "@mui/icons-material/LocationOn";
-import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import PlaceIcon from "@mui/icons-material/Place";
 import CloseIcon from "@mui/icons-material/Close";
 import Image from "next/image";
+import { authApi } from "@/lib/redux/slices/authSlice";
+import { useAppSelector } from "@/lib/redux/hooks";
 
 interface RestaurantModalProps {
   restaurant: MapMarker | null;
@@ -23,10 +24,42 @@ export const RestaurantModal = ({
   onClose,
   travelInfo,
 }: RestaurantModalProps) => {
+  const [isVisited, setIsVisited] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const accessToken = useAppSelector((state) => state.auth.accessToken);
+  const handleToggleVisited = async () => {
+    console.log(accessToken);
+    if (!restaurant) return;
+
+    try {
+      setIsLoading(true);
+      setError(null);
+      const response = await authApi.post(
+        "/visited/",
+        {
+          location_id: restaurant.id,
+          notes: `Visited ${restaurant.name}`,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`, // Replace accessToken with your actual token variable
+          },
+        }
+      );
+
+      setIsVisited(response.data.is_visited);
+    } catch (err) {
+      console.error("Error toggling visited status:", err);
+      setError("Failed to update visited status. Please try again.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   if (!isOpen || !restaurant) return null;
 
   return (
-    
     <div className="fixed top-15 right-5 max-h-[85%] w-[350px] bg-[#FEF5E3] border-10 border-[#D5DBB5] shadow-lg rounded-2xl z-100 overflow-y-auto text-black custom-scrollbar">
       {/* Image area */}
       <div className="relative h-48 w-full">
@@ -49,8 +82,7 @@ export const RestaurantModal = ({
           <CloseIcon fontSize="small" />
         </button>
       </div>
-      
-    
+
       {/* Content area */}
       <div className="p-6 bg-[#FEF5E3]">
         {/* Restaurant name and status */}
@@ -128,9 +160,31 @@ export const RestaurantModal = ({
           )}
         </div>
 
+        {/* Error message */}
+        {error && (
+          <div className="text-red-500 text-sm mb-4 text-center">{error}</div>
+        )}
+
         {/* Mark as visited button */}
-        <button className="w-full bg-[#5A9785] hover:bg-[#48796B] text-white py-2 px-4 rounded-full font-lg transition-colors">
-          Mark as visited
+        <button
+          onClick={handleToggleVisited}
+          disabled={isLoading}
+          className={`w-full ${
+            isVisited
+              ? "bg-gray-400 hover:bg-gray-500"
+              : "bg-[#5A9785] hover:bg-[#48796B]"
+          } text-white py-2 px-4 rounded-full font-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed`}
+        >
+          {isLoading ? (
+            <span className="flex items-center justify-center">
+              <div className="animate-spin rounded-full h-5 w-5 border-t-2 border-b-2 border-white mr-2"></div>
+              Updating...
+            </span>
+          ) : isVisited ? (
+            "Remove from Visited"
+          ) : (
+            "Mark as Visited"
+          )}
         </button>
       </div>
     </div>

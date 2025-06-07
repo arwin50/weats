@@ -7,7 +7,7 @@ import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import Image from "next/image";
 import { useSelector } from "react-redux";
 import Link from "next/link";
-import { api } from "@/lib/redux/slices/authSlice";
+import { authApi } from "@/lib/redux/slices/authSlice";
 
 interface RestaurantListOverlayProps {
   restaurants: MapMarker[];
@@ -27,6 +27,7 @@ export const RestaurantListOverlay = ({
     (state: any) => state.auth.isAuthenticated
   );
   const [showModal, setShowModal] = useState(false);
+  const [showAlreadySavedModal, setShowAlreadySavedModal] = useState(false);
 
   const handleSaveClick = async () => {
     if (!isAuthenticated) {
@@ -35,32 +36,24 @@ export const RestaurantListOverlay = ({
     }
 
     try {
-      const response = await api.post(
-        "/suggestions/save_suggestions/",
-        {
-          lat: preferences.lat,
-          lng: preferences.lng,
-          preferences: {
-            food_preference: preferences.food_preference,
-            dietary_preference: preferences.dietary_preference,
-            max_price: preferences.max_price,
-          },
-          restaurants,
+      const response = await authApi.post("/suggestions/save_suggestions/", {
+        lat: preferences.locationCoords?.lat || 10.3157,
+        lng: preferences.locationCoords?.lng || 123.8854,
+        preferences: {
+          food_preference: preferences.foodPreference,
+          dietary_preference: preferences.dietaryPreference,
+          max_price: preferences.maxPrice,
         },
-        {
-          headers: {
-            Authorization: `Bearer ${user.token}`,
-            "Content-Type": "application/json",
-          },
-          withCredentials: true,
-        }
-      );
+        restaurants,
+      });
 
       alert("Suggestions saved!");
-      console.log("Suggestion response:", response.data);
     } catch (error: any) {
-      console.error("Save error:", error.response?.data || error.message);
-      alert("Failed to save suggestions.");
+      if (error.response?.data?.code === "DUPLICATE_SUGGESTION") {
+        setShowAlreadySavedModal(true);
+      } else {
+        alert("Failed to save suggestions.");
+      }
     }
   };
 
@@ -110,11 +103,17 @@ export const RestaurantListOverlay = ({
 
                   <div className="flex items-center gap-2 sm:gap-4 text-gray-700">
                     <div className="flex items-center gap-1">
-                      <LocationOnIcon className="text-xs sm:text-sm" fontSize="small" />
+                      <LocationOnIcon
+                        className="text-xs sm:text-sm"
+                        fontSize="small"
+                      />
                       <span className="text-xs sm:text-sm">0.3km</span>
                     </div>
                     <div className="flex items-center gap-1">
-                      <AccessTimeIcon className="text-xs sm:text-sm" fontSize="small" />
+                      <AccessTimeIcon
+                        className="text-xs sm:text-sm"
+                        fontSize="small"
+                      />
                       <span className="text-xs sm:text-sm">15 mins</span>
                     </div>
                   </div>
@@ -171,6 +170,24 @@ export const RestaurantListOverlay = ({
             >
               Cancel
             </button>
+          </div>
+        </div>
+      )}
+
+      {showAlreadySavedModal && (
+        <div className="fixed inset-0 bg-black/[75%] flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl shadow-lg p-6 w-[90%] max-w-md text-center">
+            <h2 className="text-xl font-playfair font-semibold mb-4">
+              This suggestion is already saved!
+            </h2>
+            <div className="flex flex-col gap-4 justify-center">
+              <button
+                className="bg-[#FF9268] hover:bg-[#E57E56] text-green-900 p-4 rounded-md w-full cursor-pointer"
+                onClick={() => setShowAlreadySavedModal(false)}
+              >
+                Close Notice
+              </button>
+            </div>
           </div>
         </div>
       )}

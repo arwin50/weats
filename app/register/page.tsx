@@ -7,12 +7,12 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Eye, EyeOff } from "lucide-react";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
-import { register, clearError } from "@/lib/redux/slices/authSlice";
+import { registerUser, clearError } from "@/lib/redux/slices/authSlice";
 
 export default function RegisterPage() {
   const router = useRouter();
   const dispatch = useAppDispatch();
-  const { isLoading, error } = useAppSelector((state) => state.auth);
+  const { loading, error } = useAppSelector((state) => state.auth);
 
   const [formData, setFormData] = useState({
     username: "",
@@ -48,7 +48,7 @@ export default function RegisterPage() {
     }
 
     try {
-      await dispatch(register(formData)).unwrap();
+      await dispatch(registerUser(formData)).unwrap();
       router.push("/login?registered=true");
     } catch (err) {
       // Error is handled by the auth slice
@@ -66,9 +66,11 @@ export default function RegisterPage() {
       {/* Form Container */}
       <div className="bg-[#E3E7D0] rounded-3xl p-6 w-full max-w-sm shadow-lg">
         <form onSubmit={handleSubmit} className="space-y-5">
-          {(error || validationError) && (
+          {(validationError ||
+            (typeof error === "string" ? error : error?.message)) && (
             <div className="mb-4 rounded-xl border border-red-400 bg-red-100 px-4 py-3 text-sm text-red-700">
-              {validationError || error}
+              {validationError ||
+                (typeof error === "string" ? error : error?.message)}
             </div>
           )}
 
@@ -166,10 +168,10 @@ export default function RegisterPage() {
           <div className="pt-2">
             <button
               type="submit"
-              disabled={isLoading}
+              disabled={loading}
               className="w-full bg-[#E07A5F] hover:bg-[#D86C51] text-white font-semibold py-2 rounded-full transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {isLoading ? "Creating account..." : "Sign up"}
+              {loading ? "Creating account..." : "Sign up"}
             </button>
           </div>
         </form>
