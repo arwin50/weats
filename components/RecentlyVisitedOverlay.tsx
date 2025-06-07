@@ -53,6 +53,9 @@ export const RecentlyVisitedOverlay = ({
         isVisible ? "translate-x-0" : "-translate-x-full"
       }`}
     >
+      <h1 className="text-2xl font-playfair font-semibold text-gray-800 mb-4">
+        Recently Visited
+      </h1>
       {recentlyVisited.map((restaurant, index) => (
         <div
           key={index}
