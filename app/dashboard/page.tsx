@@ -93,7 +93,7 @@ export default function DashboardPage() {
               lat: promptData.locationCoords?.lat || 10.3157,
               lng: promptData.locationCoords?.lng || 123.8854,
               preferences: {
-                food_prefernece: promptData.foodPreference,
+                food_preference: promptData.foodPreference,
                 dietary_preference: promptData.dietaryPreference,
                 max_price: promptData.maxPrice,
               },
