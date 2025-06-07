@@ -7,12 +7,12 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Eye, EyeOff } from "lucide-react";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
-import { login, clearError } from "@/lib/redux/slices/authSlice";
+import { loginUser, clearError } from "@/lib/redux/slices/authSlice";
 
 export default function LoginPage() {
   const router = useRouter();
   const dispatch = useAppDispatch();
-  const { isAuthenticated, isLoading, error } = useAppSelector(
+  const { isAuthenticated, loading, error } = useAppSelector(
     (state) => state.auth
   );
 
@@ -25,15 +25,14 @@ export default function LoginPage() {
   }, [dispatch]);
 
   useEffect(() => {
-    if (isAuthenticated && !isLoading) {
+    if (isAuthenticated && !loading) {
       router.push("/dashboard");
     }
-  }, [isAuthenticated, isLoading, router]);
+  }, [isAuthenticated, loading, router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    await dispatch(login({ email, password })).unwrap();
-    router.push("/dashboard");
+    await dispatch(loginUser({ email, password })).unwrap();
   };
 
   return (
@@ -47,8 +46,10 @@ export default function LoginPage() {
       <div className="bg-[#E3E7D0] rounded-3xl p-6 w-full max-w-sm shadow-lg">
         <form onSubmit={handleSubmit} className="space-y-6">
           {error && (
-            <div className="mb-4 rounded-xl border border-red-400 bg-red-100 px-4 py-3 text-sm text-red-700">
-              {error}
+            <div className="...">
+              {typeof error === "string"
+                ? error
+                : error.message || "An unexpected error occurred"}
             </div>
           )}
 
@@ -99,10 +100,10 @@ export default function LoginPage() {
           <div className="pt-2">
             <button
               type="submit"
-              disabled={isLoading}
+              disabled={loading}
               className="w-full bg-[#E07A5F] hover:bg-[#D86C51] text-white font-semibold py-2 rounded-full transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {isLoading ? "Logging in..." : "Log in"}
+              {loading ? "Logging in..." : "Log in"}
             </button>
           </div>
         </form>

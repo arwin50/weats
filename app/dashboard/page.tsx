@@ -7,8 +7,8 @@ import { PreviousPromptOverlay } from "@/components/PreviousPromptOverlay";
 import { RecentlyVisitedOverlay } from "@/components/RecentlyVisitedOverlay";
 import { RestaurantModal } from "@/components/RestaurantModal";
 import { Eye, EyeOff, Book, MapPin, Star } from "lucide-react";
-import { api, markAppAsUsed } from "@/lib/redux/slices/authSlice";
-import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
+import { authApi } from "@/lib/redux/slices/authSlice";
+import { useAppSelector } from "@/lib/redux/hooks";
 
 interface Restaurant {
   name: string;
@@ -31,7 +31,6 @@ interface ApiResponse {
 }
 
 export default function DashboardPage() {
-  const dispatch = useAppDispatch();
   const promptData = useAppSelector((state) => state.prompt);
   const authData = useAppSelector((state) => state.auth);
   const [placeMarkers, setPlaceMarkers] = useState<MapMarker[]>([]);
@@ -46,11 +45,6 @@ export default function DashboardPage() {
   const [recentlyVisited, setRecentlyVisited] = useState<MapMarker[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    // Mark the app as used when the dashboard is loaded
-    dispatch(markAppAsUsed());
-  }, [dispatch]);
 
   useEffect(() => {
     // Log user data
@@ -85,15 +79,18 @@ export default function DashboardPage() {
           setIsLoading(true);
           setError(null);
 
-          const response = await api.post<ApiResponse>("/maps/search_places/", {
-            lat: promptData.locationCoords?.lat || 10.3157,
-            lng: promptData.locationCoords?.lng || 123.8854,
-            preferences: {
-              food_prefernece: promptData.foodPreference,
-              dietary_preference: promptData.dietaryPreference,
-              max_price: promptData.maxPrice,
-            },
-          });
+          const response = await authApi.post<ApiResponse>(
+            "/maps/search_places/",
+            {
+              lat: promptData.locationCoords?.lat || 10.3157,
+              lng: promptData.locationCoords?.lng || 123.8854,
+              preferences: {
+                food_prefernece: promptData.foodPreference,
+                dietary_preference: promptData.dietaryPreference,
+                max_price: promptData.maxPrice,
+              },
+            }
+          );
 
           if (response.data.restaurants) {
             const markers: MapMarker[] = response.data.restaurants.map(
@@ -125,8 +122,24 @@ export default function DashboardPage() {
       }
     };
 
-    fetchRestaurants();
-  }, [promptData.wizardCompleted]);
+    // Add a flag to prevent double calls
+    let isMounted = true;
+
+    if (isMounted) {
+      fetchRestaurants();
+    }
+
+    // Cleanup function
+    return () => {
+      isMounted = false;
+    };
+  }, [
+    promptData.wizardCompleted,
+    promptData.foodPreference,
+    promptData.dietaryPreference,
+    promptData.locationCoords,
+    promptData.maxPrice,
+  ]);
 
   const handleSelectRestaurant = (restaurant: MapMarker) => {
     setSelectedRestaurant(restaurant);

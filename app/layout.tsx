@@ -1,22 +1,29 @@
 import type { Metadata } from "next";
+import { Inter } from "next/font/google";
 import "./globals.css";
 import { Providers } from "./providers";
+import AuthInitializer from "@/components/AuthInitializer";
+
+const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Choosee",
-  description: "confused where to eat? use choosee",
+  title: "Weats",
+  description: "Where do YOU wanna eat?",
 };
 
 export default function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode;
-}>) {
+}) {
   return (
     <html lang="en">
-      <Providers>
-        <body className={`antialiased`}>{children}</body>
-      </Providers>
+      <body className={inter.className}>
+        <Providers>
+          <AuthInitializer />
+          {children}
+        </Providers>
+      </body>
     </html>
   );
 }

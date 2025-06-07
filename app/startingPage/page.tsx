@@ -1,8 +1,5 @@
 import StartingPage from "@/components/wizard/startingPage";
-import React from "react";
 
-function startingPage() {
+export default function Page() {
   return <StartingPage />;
 }
-
-export default startingPage;
