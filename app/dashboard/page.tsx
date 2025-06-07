@@ -12,6 +12,8 @@ import { useAppSelector } from "@/lib/redux/hooks";
 import { FaRedo } from "react-icons/fa";
 import { FaBookOpen, FaMapMarkedAlt, FaUtensils } from "react-icons/fa";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
+import logo from "@/assets/images/logo.svg";
 
 interface Restaurant {
   name: string;
@@ -243,6 +245,15 @@ export default function DashboardPage() {
 
   return (
     <div>
+      {/* Logo */}
+        <Image
+          src={logo || "/placeholder.svg"}
+          alt="Logo"
+          width={80}
+          height={80}
+          className="object-contain sm:w-[100px] sm:h-[100px] md:w-[130px] md:h-[130px]"
+        />
+      </div>
       {/* Responsive button row at top left */}
       <div className="fixed top-4 left-0 z-50 flex gap-2 sm:gap-4 items-center px-2 sm:px-6 py-2 w-full max-w-full overflow-x-auto bg-transparent">
         {/* Recycle button */}
@@ -266,23 +277,23 @@ export default function DashboardPage() {
           <>
             <button
               onClick={() => setActiveOverlay("restaurant")}
-              className="bg-[#F5E6C8] hover:bg-[#e5d6b8] text-black rounded-xl px-3 py-2 flex items-center gap-1 sm:gap-2 shadow-md focus:outline-none font-semibold text-base sm:text-lg"
+              className="bg-[#D5DBB5] hover:bg-[#BFC89E] text-black rounded-xl px-3 py-2 flex items-center gap-1 sm:gap-2 shadow-md focus:outline-none font-semibold text-base sm:text-lg"
             >
-              <span className="font-bold">Resto List</span>{" "}
+              <span className="font-bold">Suggestion</span>{" "}
               <FaUtensils size={16} />
             </button>
             <button
-              onClick={() => setActiveOverlay("recently")}
+              onClick={() => setActiveOverlay("previous")}
               className="bg-[#FFF396] hover:bg-[#e6e272] text-black rounded-xl px-3 py-2 flex items-center gap-1 sm:gap-2 shadow-md focus:outline-none font-semibold text-base sm:text-lg"
             >
               <span className="font-bold">View history</span>{" "}
               <FaBookOpen size={16} />
             </button>
             <button
-              onClick={() => setActiveOverlay("previous")}
-              className="bg-[#B7D3C4] hover:bg-[#a0bfb0] text-black rounded-xl px-3 py-2 flex items-center gap-1 sm:gap-2 shadow-md focus:outline-none font-semibold text-base sm:text-lg"
+              onClick={() => setActiveOverlay("recently")}
+              className="bg-[#B1A0C9] hover:bg-[#927EB0] text-black rounded-xl px-3 py-2 flex items-center gap-1 sm:gap-2 shadow-md focus:outline-none font-semibold text-base sm:text-lg"
             >
-              <span className="font-bold">Suggestions</span>{" "}
+              <span className="font-bold">Recently Visited</span>{" "}
               <FaMapMarkedAlt size={16} />
             </button>
           </>

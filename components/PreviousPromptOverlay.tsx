@@ -7,7 +7,7 @@ interface PreviousPromptOverlayProps {
 export function PreviousPromptOverlay({ isVisible }: PreviousPromptOverlayProps) {
   return (
     <div
-      className={`fixed left-0 top-20 h-[85%] w-[70%] sm:w-100 bg-[#B7D3C4] shadow-lg rounded-r-2xl z-50 overflow-y-auto text-black custom-scrollbar p-6 transform transition-transform duration-300 ease-in-out ${
+      className={`fixed left-0 top-20 h-[85%] w-[70%] sm:w-100 bg-[#FFF396] shadow-lg rounded-r-3xl z-50 overflow-y-auto text-black custom-scrollbar p-6 transform transition-transform duration-300 ease-in-out ${
         isVisible ? "translate-x-0" : "-translate-x-full"
       }`}
     >
