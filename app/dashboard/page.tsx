@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { FoodMap, MapMarker } from "@/components/map";
 import { RestaurantListOverlay } from "@/components/RestaurantListOverlay";
 import { PreviousPromptOverlay } from "@/components/PreviousPromptOverlay";
@@ -8,7 +8,8 @@ import { RecentlyVisitedOverlay } from "@/components/RecentlyVisitedOverlay";
 import { RestaurantModal } from "@/components/RestaurantModal";
 import { Eye, EyeOff, Book, MapPin, Star } from "lucide-react";
 import { api, markAppAsUsed } from "@/lib/redux/slices/authSlice";
-import { useAppDispatch } from "@/lib/redux/hooks";
+import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
+import { useRouter } from "next/navigation";
 
 interface Restaurant {
   name: string;
@@ -30,18 +31,10 @@ interface ApiResponse {
   count: number;
 }
 
-interface WizardPreferences {
-  lat: number;
-  lng: number;
-  preferences: {
-    cuisine_type: string;
-    dietary_preference: string;
-    max_price: number;
-  };
-}
-
 export default function DashboardPage() {
+  const router = useRouter();
   const dispatch = useAppDispatch();
+  const promptData = useAppSelector((state) => state.prompt);
   const [placeMarkers, setPlaceMarkers] = useState<MapMarker[]>([]);
   const [center, setCenter] = useState({ lat: 10.3157, lng: 123.8854 });
   const [selectedRestaurant, setSelectedRestaurant] = useState<MapMarker | null>(null);
@@ -68,11 +61,16 @@ export default function DashboardPage() {
       setPreferences(parsedPreferences);
       setCenter({ lat: parsedPreferences.lat, lng: parsedPreferences.lng });
     }
-  }, []);
+  }, [promptData.locationCoords]);
 
   useEffect(() => {
+    // Fetch restaurants only when wizard is completed
     const fetchRestaurants = async () => {
-      if (preferences) {
+      if (
+        promptData.wizardCompleted &&
+        promptData.foodPreference &&
+        promptData.dietaryPreference
+      ) {
         try {
           // Clear previous data
           setPlaceMarkers([]);
@@ -82,9 +80,13 @@ export default function DashboardPage() {
           setError(null);
 
           const response = await api.post<ApiResponse>("/maps/search_places/", {
-            lat: preferences.lat,
-            lng: preferences.lng,
-            preferences: preferences.preferences,
+            lat: promptData.locationCoords?.lat || 10.3157,
+            lng: promptData.locationCoords?.lng || 123.8854,
+            preferences: {
+              food_prefernece: promptData.foodPreference,
+              dietary_preference: promptData.dietaryPreference,
+              max_price: promptData.maxPrice,
+            },
           });
 
           if (response.data.restaurants) {
@@ -118,7 +120,7 @@ export default function DashboardPage() {
     };
 
     fetchRestaurants();
-  }, [preferences]);
+  }, [promptData.wizardCompleted]);
 
   const handleSelectRestaurant = (restaurant: MapMarker) => {
     setSelectedRestaurant(restaurant);
