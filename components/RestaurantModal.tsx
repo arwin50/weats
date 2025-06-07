@@ -20,7 +20,9 @@ export const RestaurantModal = ({
   if (!isOpen || !restaurant) return null;
 
   return (
+    
     <div className="fixed top-15 right-5 max-h-[85%] w-[350px] bg-[#FEF5E3] border-10 border-[#D5DBB5] shadow-lg rounded-2xl z-100 overflow-y-auto text-black custom-scrollbar">
+      
       {/* Image placeholder area */}
       <div className="relative h-30 bg-gray-300">
         <button
@@ -30,7 +32,8 @@ export const RestaurantModal = ({
           <CloseIcon fontSize="small" />
         </button>
       </div>
-
+      
+    
       {/* Content area */}
       <div className="p-6 bg-[#FEF5E3]">
         {/* Restaurant name and status */}

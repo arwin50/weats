@@ -5,24 +5,24 @@ import { MapMarker } from "./map";
 import LocationOnIcon from "@mui/icons-material/LocationOn";
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
 
-interface RestaurantListOverlayProps {
-  restaurants: MapMarker[];
+interface RecentlyVisitedOverlayProps {
+  recentlyVisited: MapMarker[];
   onSelectRestaurant: (restaurant: MapMarker) => void;
   isVisible: boolean;
 }
 
-export const RestaurantListOverlay = ({
-  restaurants,
+export const RecentlyVisitedOverlay = ({
+  recentlyVisited,
   onSelectRestaurant,
   isVisible,
-}: RestaurantListOverlayProps) => {
+}: RecentlyVisitedOverlayProps) => {
   return (
     <div
-      className={`fixed left-0 top-12 h-[90%] w-[30%] bg-[#D5DBB5] border-8 border-[#D5DBB5] overflow-y-auto p-4 z-40 shadow-md rounded-r-xl custom-scrollbar transform transition-transform duration-300 ease-in-out ${
+      className={`fixed left-0 top-12 h-[90%] w-[30%] bg-[#FFF396] overflow-y-auto p-4 z-40 shadow-md rounded-r-xl custom-scrollbar transform transition-transform duration-300 ease-in-out ${
         isVisible ? "translate-x-0" : "-translate-x-full"
       }`}
     >
-      {restaurants.map((restaurant, index) => (
+      {recentlyVisited.map((restaurant, index) => (
         <div
           key={index}
           className="bg-[#FEF5E3] rounded-xl p-4 mb-4 shadow-md flex items-start gap-4"
