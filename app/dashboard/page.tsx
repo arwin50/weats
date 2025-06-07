@@ -89,9 +89,9 @@ export default function DashboardPage() {
             lat: promptData.locationCoords?.lat || 10.3157,
             lng: promptData.locationCoords?.lng || 123.8854,
             preferences: {
-              food_prefernece: promptData.foodPreference,
+              food_preference: promptData.foodPreference,
               dietary_preference: promptData.dietaryPreference,
-              max_price: promptData.maxPrice,
+              price: promptData.maxPrice,
             },
           });
 
@@ -189,7 +189,7 @@ export default function DashboardPage() {
       </button>
 
       {isOverlayVisible && (
-        <div className="fixed z-40 flex flex-row md:flex-col items-center md:items-end gap-3 px-2 md:px-0 md:left-100 md:top-20 transform translate-x-1/2 md:translate-x-0">
+        <div className="fixed z-40 flex flex-row md:flex-col items-center md:items-end gap-3 px-2 md:px-0 md:left-10s0 md:top-20 transform translate-x-1/2 md:translate-x-0">
           <div
             onClick={() => setActiveOverlay("restaurant")}
             className="w-14 h-14 md:w-30 md:h-20 bg-[#D5DBB5] rounded-full flex items-center justify-center hover:bg-[#BFC59A] cursor-pointer transition"
