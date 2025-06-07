@@ -4,6 +4,7 @@ import React from "react";
 import { MapMarker } from "./map";
 import LocationOnIcon from "@mui/icons-material/LocationOn";
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
+import Image from "next/image";
 
 interface RestaurantListOverlayProps {
   restaurants: MapMarker[];
@@ -18,7 +19,7 @@ export const RestaurantListOverlay = ({
 }: RestaurantListOverlayProps) => {
   return (
     <div
-      className={`fixed left-0 top-12 h-[90%] w-[30%] bg-[#D5DBB5] border-8 border-[#D5DBB5] overflow-y-auto p-4 z-40 shadow-md rounded-r-xl custom-scrollbar transform transition-transform duration-300 ease-in-out ${
+      className={`fixed left-0 top-12 h-[90%] w-110 bg-[#D5DBB5] border-8 border-[#D5DBB5] overflow-y-auto p-4 z-40 shadow-md rounded-r-xl custom-scrollbar transform transition-transform duration-300 ease-in-out ${
         isVisible ? "translate-x-0" : "-translate-x-full"
       }`}
     >
@@ -27,7 +28,22 @@ export const RestaurantListOverlay = ({
           key={index}
           className="bg-[#FEF5E3] rounded-xl p-4 mb-4 shadow-md flex items-start gap-4"
         >
-          <div className="w-16 h-24 bg-gray-300 rounded-lg"></div>
+          {/* Restaurant photo */}
+          <div className="relative w-16 h-24 flex-shrink-0">
+            {restaurant.photo_url ? (
+              <Image
+                src={restaurant.photo_url}
+                alt={restaurant.name}
+                fill
+                className="object-cover rounded-lg"
+              />
+            ) : (
+              <div className="w-full h-full bg-gray-300 rounded-lg flex items-center justify-center">
+                <span className="text-gray-500 text-xs">No image</span>
+              </div>
+            )}
+          </div>
+
           <div className="flex-1">
             <div className="flex justify-between items-start">
               <h3 className="text-black text-md font-playfair font-semibold leading-snug">

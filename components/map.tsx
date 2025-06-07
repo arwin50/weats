@@ -1,17 +1,36 @@
 "use client";
 
 import React, { useState, useCallback } from "react";
-import { GoogleMap, useLoadScript, Marker } from "@react-google-maps/api";
+import {
+  GoogleMap,
+  useLoadScript,
+  Marker,
+  Polyline,
+} from "@react-google-maps/api";
+import { decode } from "@googlemaps/polyline-codec";
 import { RestaurantModal } from "./RestaurantModal";
 import { LoadingSpinner } from "./LoadingSpinner";
+import axios from "axios";
 
-// Container style for the map div
 const containerStyle = {
   width: "100%",
   height: "800px",
 };
 
+const getMarkerSymbol = (color: string, scale: number = 10) => {
+  if (typeof google === "undefined") return undefined;
+  return {
+    path: google.maps.SymbolPath.CIRCLE,
+    fillColor: color,
+    fillOpacity: 0.9,
+    strokeColor: "#ffffff",
+    strokeWeight: 2,
+    scale,
+  };
+};
+
 export interface MapMarker {
+  id: string;
   name: string;
   address: string;
   lat: number;
@@ -22,22 +41,24 @@ export interface MapMarker {
   types?: string[];
   description?: string;
   recommendation_reason?: string;
+  rank?: number;
+  photo_url?: string;
 }
-
-type centerType = {
-  lat: number;
-  lng: number;
-};
 
 interface MapProps {
   markers: MapMarker[];
-  center: centerType;
+  center: { lat: number; lng: number };
 }
 
 export const FoodMap = ({ markers, center }: MapProps) => {
   const [selectedRestaurant, setSelectedRestaurant] =
     useState<MapMarker | null>(null);
   const [mapCenter, setMapCenter] = useState(center);
+  const [travelInfo, setTravelInfo] = useState<{
+    distanceText: string;
+    durationText: string;
+  } | null>(null);
+  const [routePath, setRoutePath] = useState<google.maps.LatLngLiteral[]>([]);
   const mapRef = React.useRef<google.maps.Map | null>(null);
 
   const { isLoaded, loadError } = useLoadScript({
@@ -50,65 +71,102 @@ export const FoodMap = ({ markers, center }: MapProps) => {
 
   const handleMarkerClick = (marker: MapMarker) => {
     setSelectedRestaurant(marker);
+    const destination = { lat: marker.lat, lng: marker.lng };
 
-    // Center map on clicked marker
-    setMapCenter({ lat: marker.lat, lng: marker.lng });
     if (mapRef.current) {
-      mapRef.current.panTo({ lat: marker.lat, lng: marker.lng });
+      mapRef.current.panTo(destination);
     }
   };
 
-  if (loadError) {
-    return <div>Error loading maps</div>;
-  }
+  const getMarkerStyle = (marker: MapMarker) => {
+    let color = "#E26F43"; // default
+    if (marker.rating && marker.rating >= 4.5) color = "#4CAF50";
+    else if (marker.price_level && marker.price_level >= 3) color = "#9C27B0";
 
-  if (!isLoaded) {
-    return <LoadingSpinner />;
-  }
+    const scale = marker.rank ? Math.max(10, 14 - marker.rank * 0.5) : 10;
+    return getMarkerSymbol(color, scale);
+  };
+
+  if (loadError) return <div>Error loading maps</div>;
+  if (!isLoaded) return <LoadingSpinner />;
 
   return (
-    <div className="relative">
+    <div className="relative w-full h-full">
       <GoogleMap
         mapContainerStyle={containerStyle}
         center={mapCenter}
-        zoom={14}
+        zoom={15}
         onLoad={onMapLoad}
         options={{
-          fullscreenControl: false, // ✅ disables fullscreen button
-          mapTypeControl: false, // (optional) disables Map/Satellite toggle
-          zoomControl: true, // (optional) keep this true if you still want zoom
-          streetViewControl: false, // (optional) hides Pegman/street view icon
+          fullscreenControl: false,
+          mapTypeControl: false,
+          zoomControl: true,
+          streetViewControl: false,
+          styles: [
+            {
+              featureType: "poi",
+              elementType: "labels",
+              stylers: [{ visibility: "off" }],
+            },
+            {
+              featureType: "poi",
+              elementType: "geometry",
+              stylers: [{ visibility: "off" }],
+            },
+            {
+              featureType: "transit",
+              elementType: "labels",
+              stylers: [{ visibility: "off" }],
+            },
+            {
+              featureType: "transit",
+              elementType: "geometry",
+              stylers: [{ visibility: "off" }],
+            },
+          ],
         }}
       >
-        {/* Center marker */}
         <Marker
           position={mapCenter}
-          icon={{
-            path: google.maps.SymbolPath.CIRCLE,
-            scale: 10,
-            fillColor: "#4285F4",
-            fillOpacity: 0.7,
-            strokeColor: "#ffffff",
-            strokeWeight: 2,
-          }}
+          icon={getMarkerSymbol("#4285F4", 10)}
           zIndex={1000}
         />
 
-        {/* Restaurant markers */}
         {markers.map((marker, index) => (
           <Marker
             key={index}
             position={{ lat: marker.lat, lng: marker.lng }}
             title={marker.name}
             onClick={() => handleMarkerClick(marker)}
+            icon={getMarkerStyle(marker)}
+            label={{
+              text: marker.rank?.toString() || "",
+              color: "#ffffff",
+              fontSize: marker.rank
+                ? `${Math.max(14, 18 - marker.rank)}px`
+                : "14px",
+              fontWeight: "bold",
+            }}
           />
         ))}
+
+        {routePath.length > 0 && (
+          <Polyline
+            path={routePath}
+            options={{ strokeColor: "#4285F4", strokeWeight: 5 }}
+          />
+        )}
       </GoogleMap>
 
       <RestaurantModal
         restaurant={selectedRestaurant}
         isOpen={!!selectedRestaurant}
-        onClose={() => setSelectedRestaurant(null)}
+        onClose={() => {
+          setSelectedRestaurant(null);
+          setRoutePath([]);
+          setTravelInfo(null);
+        }}
+        travelInfo={travelInfo}
       />
     </div>
   );

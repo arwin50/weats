@@ -7,7 +7,8 @@ import { PreviousPromptOverlay } from "@/components/PreviousPromptOverlay";
 import { RecentlyVisitedOverlay } from "@/components/RecentlyVisitedOverlay";
 import { RestaurantModal } from "@/components/RestaurantModal";
 import { Eye, EyeOff, Book, MapPin, Star } from "lucide-react";
-import { api } from "@/lib/redux/slices/authSlice";
+import { api, markAppAsUsed } from "@/lib/redux/slices/authSlice";
+import { useAppDispatch } from "@/lib/redux/hooks";
 
 interface Restaurant {
   name: string;
@@ -20,6 +21,8 @@ interface Restaurant {
   types?: string[];
   description?: string;
   recommendation_reason?: string;
+  rank?: number;
+  photo_url?: string;
 }
 
 interface ApiResponse {
@@ -38,15 +41,25 @@ interface WizardPreferences {
 }
 
 export default function DashboardPage() {
+  const dispatch = useAppDispatch();
   const [placeMarkers, setPlaceMarkers] = useState<MapMarker[]>([]);
   const [center, setCenter] = useState({ lat: 10.3157, lng: 123.8854 });
   const [selectedRestaurant, setSelectedRestaurant] = useState<MapMarker | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isOverlayVisible, setIsOverlayVisible] = useState(true);
-  const [preferences, setPreferences] = useState<WizardPreferences | null>(null);
   const [activeOverlay, setActiveOverlay] = useState<"restaurant" | "previous" | "recently" | null>("restaurant");
   const [recentlyVisited, setRecentlyVisited] = useState<MapMarker[]>([]);
 
+  const [preferences, setPreferences] = useState<WizardPreferences | null>(
+    null
+  );
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    // Mark the app as used when the dashboard is loaded
+    dispatch(markAppAsUsed());
+  }, [dispatch]);
 
   useEffect(() => {
     const storedPreferences = localStorage.getItem("wizardPreferences");
@@ -61,6 +74,13 @@ export default function DashboardPage() {
     const fetchRestaurants = async () => {
       if (preferences) {
         try {
+          // Clear previous data
+          setPlaceMarkers([]);
+          setSelectedRestaurant(null);
+          setIsModalOpen(false);
+          setIsLoading(true);
+          setError(null);
+
           const response = await api.post<ApiResponse>("/maps/search_places/", {
             lat: preferences.lat,
             lng: preferences.lng,
@@ -68,19 +88,31 @@ export default function DashboardPage() {
           });
 
           if (response.data.restaurants) {
-            const markers: MapMarker[] = response.data.restaurants.map((restaurant) => ({
-              name: restaurant.name,
-              address: restaurant.address,
-              lat: restaurant.lat,
-              lng: restaurant.lng,
-              rating: restaurant.rating,
-              price_level: restaurant.price_level,
-              types: restaurant.types,
-            }));
+            const markers: MapMarker[] = response.data.restaurants.map(
+              (restaurant) => ({
+                id: restaurant.name,
+                name: restaurant.name,
+                address: restaurant.address,
+                lat: restaurant.lat,
+                lng: restaurant.lng,
+                rating: restaurant.rating,
+                price_level: restaurant.price_level,
+                types: restaurant.types,
+                rank: restaurant.rank,
+                photo_url: restaurant.photo_url,
+              })
+            );
             setPlaceMarkers(markers);
           }
         } catch (error) {
           console.error("Error fetching restaurants:", error);
+          setError("Failed to fetch restaurants. Please try again.");
+          // Clear data on error
+          setPlaceMarkers([]);
+          setSelectedRestaurant(null);
+          setIsModalOpen(false);
+        } finally {
+          setIsLoading(false);
         }
       }
     };
@@ -106,7 +138,39 @@ export default function DashboardPage() {
   };
 
   return (
-    <div className="relative w-screen h-screen overflow-hidden">
+    <div>
+      {isLoading && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white p-8 rounded-2xl shadow-xl text-center">
+            <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-[#5A9785] mx-auto mb-4"></div>
+            <h2 className="text-xl font-semibold text-gray-800 mb-2">
+              Finding the best restaurants...
+            </h2>
+            <p className="text-gray-600">
+              Please wait while we search for amazing places near you
+            </p>
+          </div>
+        </div>
+      )}
+
+      {error && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white p-8 rounded-2xl shadow-xl text-center">
+            <div className="text-red-500 text-4xl mb-4">⚠️</div>
+            <h2 className="text-xl font-semibold text-gray-800 mb-2">
+              Oops! Something went wrong
+            </h2>
+            <p className="text-gray-600 mb-4">{error}</p>
+            <button
+              onClick={() => window.location.reload()}
+              className="bg-[#5A9785] text-white px-6 py-2 rounded-full hover:bg-[#48796B] transition-colors"
+            >
+              Try Again
+            </button>
+          </div>
+        </div>
+      )}
+
       <FoodMap markers={placeMarkers} center={center} />
 
       <button
@@ -116,29 +180,33 @@ export default function DashboardPage() {
         {isOverlayVisible ? <Eye size={20} /> : <EyeOff size={20} />}
       </button>
 
-      <div
-        className={`fixed z-40 flex md:flex-col flex-row md:top-15 top-auto bottom-4 left-0 md:left-0 md:h-[90%] w-full md:w-auto items-center md:items-start gap-2 px-2 md:px-0 transition-transform duration-300 ${isOverlayVisible ? "translate-x-51" : "-translate-x-full md:-translate-x-full"
-          }`}
-      >
+      {isOverlayVisible && (
         <div
-          onClick={() => setActiveOverlay("restaurant")}
-          className="w-15 h-12 md:w-25 md:h-16 bg-[#D5DBB5] rounded-full flex items-center justify-center hover:bg-[#BFC59A] cursor-pointer"
+          className="fixed z-40 flex flex-row md:flex-col items-center md:items-end gap-3 px-2 md:px-0 md:left-100 md:top-20 transform translate-x-1/2 md:translate-x-0"
         >
-          <Book size={30} className="text-green-900" />
+
+          <div
+            onClick={() => setActiveOverlay("restaurant")}
+            className="w-14 h-14 md:w-30 md:h-20 bg-[#D5DBB5] rounded-full flex items-center justify-center hover:bg-[#BFC59A] cursor-pointer transition"
+          >
+            <Book size={28} className="text-green-900 md:size-8 ml-7" />
+          </div>
+          <div
+            onClick={() => setActiveOverlay("recently")}
+            className="w-14 h-14 md:w-30 md:h-20 bg-[#FFF396] rounded-full flex items-center justify-center hover:bg-[#E6E272] cursor-pointer transition"
+          >
+            <MapPin size={28} className="text-green-900 md:size-8 ml-7" />
+          </div>
+          <div
+            onClick={() => setActiveOverlay("previous")}
+            className="w-14 h-14 md:w-30 md:h-20 bg-[#FF9268] rounded-full flex items-center justify-center hover:bg-[#E57E56] cursor-pointer transition"
+          >
+            <Star size={28} className="text-green-900 md:size-8 ml-7" />
+          </div>
         </div>
-        <div
-          onClick={() => setActiveOverlay("recently")}
-          className="w-12 h-12 md:w-25 md:h-16 bg-[#FFF396] rounded-full flex items-center justify-center hover:bg-[#E6E272] cursor-pointer"
-        >
-          <MapPin size={30} className="text-green-900" />
-        </div>
-        <div
-          onClick={() => setActiveOverlay("previous")}
-          className="w-12 h-12 md:w-25 md:h-16 bg-[#FF9268] rounded-full flex items-center justify-center hover:bg-[#E57E56] cursor-pointer"
-        >
-          <Star size={30} className="text-green-900" />
-        </div>
-      </div>
+      )}
+
+
 
       {activeOverlay === "restaurant" && (
         <RestaurantListOverlay
@@ -153,8 +221,9 @@ export default function DashboardPage() {
       {activeOverlay === "recently" && (
         <RecentlyVisitedOverlay
           isVisible={isOverlayVisible}
-          recentlyVisited={recentlyVisited}
-        />
+          recentlyVisited={recentlyVisited} onSelectRestaurant={function (restaurant: MapMarker): void {
+            throw new Error("Function not implemented.");
+          }} />
       )}
 
 
