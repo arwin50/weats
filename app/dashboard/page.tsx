@@ -11,6 +11,7 @@ import { api, markAppAsUsed } from "@/lib/redux/slices/authSlice";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { FaRedo } from "react-icons/fa";
 import { FaBookOpen, FaMapMarkedAlt, FaUtensils } from "react-icons/fa";
+import { useRouter } from "next/navigation";
 
 interface Restaurant {
   name: string;
@@ -48,6 +49,7 @@ export default function DashboardPage() {
   const [recentlyVisited, setRecentlyVisited] = useState<MapMarker[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const router = useRouter();
 
   useEffect(() => {
     // Mark the app as used when the dashboard is loaded
@@ -183,8 +185,7 @@ export default function DashboardPage() {
   };
 
   const startWizard = () => {
-    // Implement the logic to start the wizard
-    console.log("Starting wizard");
+    router.push("/startingWizard");
   };
 
   return (
