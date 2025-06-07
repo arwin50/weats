@@ -59,7 +59,8 @@ export const RecentlyVisitedOverlay = ({
       {recentlyVisited.map((restaurant, index) => (
         <div
           key={index}
-          className="bg-[#FEF5E3] rounded-xl p-4 mb-4 shadow-md flex items-start gap-4"
+          className="bg-[#FEF5E3] rounded-xl p-4 mb-4 shadow-md flex items-start gap-4 hover:105"
+          onClick={() => onSelectRestaurant(restaurant)}
         >
           <div className="relative w-16 h-24 rounded-lg overflow-hidden">
             {restaurant.photo_url ? (
@@ -106,12 +107,6 @@ export const RecentlyVisitedOverlay = ({
                   {restaurant.types[0].replace(/_/g, " ")}
                 </span>
               )}
-              <button
-                onClick={() => onSelectRestaurant(restaurant)}
-                className="text-sm px-3 py-1 bg-gray-200 hover:bg-gray-300 text-gray-800 rounded-full"
-              >
-                Details
-              </button>
             </div>
           </div>
         </div>

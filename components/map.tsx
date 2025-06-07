@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useEffect } from "react";
 import {
   GoogleMap,
   useLoadScript,
@@ -57,10 +57,29 @@ export const FoodMap = ({ markers, center }: MapProps) => {
   } | null>(null);
   const [routePath, setRoutePath] = useState<google.maps.LatLngLiteral[]>([]);
   const mapRef = React.useRef<google.maps.Map | null>(null);
+  const [isLoaded, setIsLoaded] = useState(false);
 
-  const { isLoaded, loadError } = useLoadScript({
+  const { isLoaded: googleMapsIsLoaded, loadError } = useLoadScript({
     googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || "",
   });
+
+  useEffect(() => {
+    // Check if Google Maps is loaded
+    if (window.google && window.google.maps) {
+      setIsLoaded(true);
+    } else {
+      // If not loaded, set up a listener for when it loads
+      const checkGoogleMaps = setInterval(() => {
+        if (window.google && window.google.maps) {
+          setIsLoaded(true);
+          clearInterval(checkGoogleMaps);
+        }
+      }, 100);
+
+      // Cleanup interval
+      return () => clearInterval(checkGoogleMaps);
+    }
+  }, []);
 
   const onMapLoad = useCallback((map: google.maps.Map) => {
     mapRef.current = map;
@@ -83,6 +102,14 @@ export const FoodMap = ({ markers, center }: MapProps) => {
     const scale = marker.rank ? Math.max(10, 14 - marker.rank * 0.5) : 10;
     return getMarkerSymbol(color, scale);
   };
+
+  if (!isLoaded) {
+    return (
+      <div className="w-full h-full flex items-center justify-center bg-gray-100">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#5A9785]"></div>
+      </div>
+    );
+  }
 
   if (loadError) return <div>Error loading maps</div>;
 
