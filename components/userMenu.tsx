@@ -3,7 +3,7 @@ import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { User, LogOut, LogIn, UserPlus, ArrowLeft } from "lucide-react";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
-import { logout } from "@/lib/redux/slices/authSlice";
+import { logoutUser } from "@/lib/redux/slices/authSlice";
 
 export function UserMenu({ className = "" }: { className?: string }) {
   const [open, setOpen] = useState(false);
@@ -31,7 +31,7 @@ export function UserMenu({ className = "" }: { className?: string }) {
 
   const handleLogout = async () => {
     try {
-      await dispatch(logout()).unwrap();
+      await dispatch(logoutUser()).unwrap();
       setOpen(false);
       router.push("/");
     } catch (error) {

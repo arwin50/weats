@@ -9,7 +9,6 @@ import { RestaurantModal } from "@/components/RestaurantModal";
 import { Eye, EyeOff, Book, MapPin, Star } from "lucide-react";
 import { api, markAppAsUsed } from "@/lib/redux/slices/authSlice";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
-import { useRouter } from "next/navigation";
 
 interface Restaurant {
   name: string;
@@ -45,10 +44,6 @@ export default function DashboardPage() {
     "restaurant" | "previous" | "recently" | null
   >("restaurant");
   const [recentlyVisited, setRecentlyVisited] = useState<MapMarker[]>([]);
-
-  const [preferences, setPreferences] = useState<WizardPreferences | null>(
-    null
-  );
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
