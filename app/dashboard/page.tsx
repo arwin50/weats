@@ -89,7 +89,7 @@ export default function DashboardPage() {
             lat: promptData.locationCoords?.lat || 10.3157,
             lng: promptData.locationCoords?.lng || 123.8854,
             preferences: {
-              food_prefernece: promptData.foodPreference,
+              food_preference: promptData.foodPreference,
               dietary_preference: promptData.dietaryPreference,
               max_price: promptData.maxPrice,
             },
@@ -112,9 +112,44 @@ export default function DashboardPage() {
             );
             setPlaceMarkers(markers);
           }
-        } catch (error) {
-          console.error("Error fetching restaurants:", error);
-          setError("Failed to fetch restaurants. Please try again.");
+        } catch (error: any) {
+          // Log the full error object
+          console.error("Full error object:", error);
+          
+          // Log specific error properties
+          console.error("Error details:", {
+            message: error?.message,
+            status: error?.response?.status,
+            statusText: error?.response?.statusText,
+            data: error?.response?.data,
+            config: {
+              url: error?.config?.url,
+              method: error?.config?.method,
+              data: error?.config?.data,
+            }
+          });
+
+          // Validate required data before showing error
+          const missingData = [];
+          if (!promptData.foodPreference) missingData.push("Food Preference");
+          if (!promptData.dietaryPreference) missingData.push("Dietary Preference");
+          if (!promptData.locationCoords) missingData.push("Location");
+
+          let errorMessage = "Failed to fetch restaurants. ";
+          if (missingData.length > 0) {
+            errorMessage += `Missing required data: ${missingData.join(", ")}`;
+          } else if (error?.response?.data?.detail) {
+            errorMessage += error.response.data.detail;
+          } else if (error?.response?.data?.message) {
+            errorMessage += error.response.data.message;
+          } else if (error?.message) {
+            errorMessage += error.message;
+          } else {
+            errorMessage += "Please try again.";
+          }
+          
+          setError(errorMessage);
+          
           // Clear data on error
           setPlaceMarkers([]);
           setSelectedRestaurant(null);
@@ -189,24 +224,24 @@ export default function DashboardPage() {
       </button>
 
       {isOverlayVisible && (
-        <div className="fixed z-40 flex flex-row md:flex-col items-center md:items-end gap-3 px-2 md:px-0 md:left-100 md:top-20 transform translate-x-1/2 md:translate-x-0">
+        <div className="fixed z-40 flex flex-col items-end gap-1.5 px-2 md:px-0 left-[90%] sm:left-100 top-20 transform -translate-x-full md:translate-x-0">
           <div
             onClick={() => setActiveOverlay("restaurant")}
-            className="w-14 h-14 md:w-30 md:h-20 bg-[#D5DBB5] rounded-full flex items-center justify-center hover:bg-[#BFC59A] cursor-pointer transition"
+            className="w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 bg-[#D5DBB5] rounded-r-full flex items-center justify-center hover:bg-[#BFC59A] cursor-pointer transition shadow-md"
           >
-            <Book size={28} className="text-green-900 md:size-8 ml-7" />
+            <Book size={24} className="text-green-900 sm:size-6 md:size-7" />
           </div>
           <div
             onClick={() => setActiveOverlay("recently")}
-            className="w-14 h-14 md:w-30 md:h-20 bg-[#FFF396] rounded-full flex items-center justify-center hover:bg-[#E6E272] cursor-pointer transition"
+            className="w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 bg-[#FFF396] rounded-r-full flex items-center justify-center hover:bg-[#E6E272] cursor-pointer transition shadow-md"
           >
-            <MapPin size={28} className="text-green-900 md:size-8 ml-7" />
+            <MapPin size={24} className="text-green-900 sm:size-6 md:size-7" />
           </div>
           <div
             onClick={() => setActiveOverlay("previous")}
-            className="w-14 h-14 md:w-30 md:h-20 bg-[#FF9268] rounded-full flex items-center justify-center hover:bg-[#E57E56] cursor-pointer transition"
+            className="w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 bg-[#FF9268] rounded-r-full flex items-center justify-center hover:bg-[#E57E56] cursor-pointer transition shadow-md"
           >
-            <Star size={28} className="text-green-900 md:size-8 ml-7" />
+            <Star size={24} className="text-green-900 sm:size-6 md:size-7" />
           </div>
         </div>
       )}

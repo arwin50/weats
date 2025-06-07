@@ -18,7 +18,7 @@ export const RecentlyVisitedOverlay = ({
 }: RecentlyVisitedOverlayProps) => {
   return (
     <div
-      className={`fixed left-0 top-12 h-[90%] w-110 bg-[#FFF396] overflow-y-auto p-4 z-40 shadow-md rounded-r-xl custom-scrollbar transform transition-transform duration-300 ease-in-out ${
+      className={`fixed left-0 top-12 h-[90%] w-[70%] sm:w-100 bg-[#FFF396] overflow-y-auto p-4 z-40 shadow-md rounded-r-xl custom-scrollbar transform transition-transform duration-300 ease-in-out ${
         isVisible ? "translate-x-0" : "-translate-x-full"
       }`}
     >
