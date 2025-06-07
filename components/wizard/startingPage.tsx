@@ -30,13 +30,13 @@ export default function StartingPage() {
         Let Choosee choose it!
       </Link>
 
-      <div className="absolute top-4 right-4 md:top-4 md:right-8">
+      <div className="absolute top-3 right-3 sm:top-4 sm:right-4 md:top-4 md:right-8">
         <Image
           src={logo}
           alt="Logo"
-          width={130}
-          height={130}
-          className="object-contain"
+          width={80}
+          height={80}
+          className="object-contain sm:w-[100px] sm:h-[100px] md:w-[130px] md:h-[130px]"
         />
       </div>
     </div>

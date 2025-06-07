@@ -161,7 +161,7 @@ export default function StepFour({
           }
         }}
         showBackButton={true}
-        nextButtonText="Choose"
+        nextButtonText="Choosee"
         nextButtonDisabled={!hasChosenLocation}
         wide={true}
       >
@@ -219,7 +219,7 @@ export default function StepFour({
         }
       }}
       showBackButton={true}
-      nextButtonText="Choose"
+      nextButtonText="Choosee"
       nextButtonDisabled={!hasChosenLocation}
     >
       <div className="flex justify-center mb-6">
