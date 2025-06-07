@@ -9,7 +9,6 @@ import { RestaurantModal } from "@/components/RestaurantModal";
 import { Eye, EyeOff, Book, MapPin, Star } from "lucide-react";
 import { api, markAppAsUsed } from "@/lib/redux/slices/authSlice";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
-import { useRouter } from "next/navigation";
 
 interface Restaurant {
   name: string;

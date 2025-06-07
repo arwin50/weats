@@ -8,21 +8,6 @@ export const api = axios.create({
   },
 });
 
-// Session management
-let refreshTokenTimeout: NodeJS.Timeout;
-
-const startRefreshTokenTimer = (expiresIn: number) => {
-  // Refresh token 1 minute before it expires
-  const timeout = (expiresIn - 60) * 1000;
-  refreshTokenTimeout = setTimeout(() => {
-    refreshToken();
-  }, timeout);
-};
-
-const stopRefreshTokenTimer = () => {
-  clearTimeout(refreshTokenTimeout);
-};
-
 // Login thunk
 export const login = createAsyncThunk(
   "auth/login",
@@ -35,15 +20,11 @@ export const login = createAsyncThunk(
         email,
         password,
       });
-      const { accessToken, refreshToken, user, expiresIn } = response.data;
-
+      const { accessToken, refreshToken, user } = response.data;
       // Store tokens and user in localStorage
       localStorage.setItem("accessToken", accessToken);
       localStorage.setItem("refreshToken", refreshToken);
       localStorage.setItem("user", JSON.stringify(user));
-
-      // Start refresh token timer
-      startRefreshTokenTimer(expiresIn);
 
       return { user, accessToken, refreshToken };
     } catch (error: any) {
@@ -70,83 +51,33 @@ export const register = createAsyncThunk(
       const response = await api.post("/users/register", formData);
       return response.data;
     } catch (error: any) {
-      if (error.response?.data) {
-        const errorData = error.response.data;
-        // Handle field-specific errors
-        if (errorData.username) {
-          return thunkAPI.rejectWithValue(errorData.username[0]);
-        }
-        if (errorData.email) {
-          return thunkAPI.rejectWithValue(errorData.email[0]);
-        }
-        if (errorData.password) {
-          return thunkAPI.rejectWithValue(errorData.password[0]);
-        }
-        if (errorData.password_confirmation) {
-          return thunkAPI.rejectWithValue(errorData.password_confirmation[0]);
-        }
-        // Handle general error message
-        if (errorData.message) {
-          return thunkAPI.rejectWithValue(errorData.message);
-        }
-        // Handle non-field errors
-        if (errorData.non_field_errors) {
-          return thunkAPI.rejectWithValue(errorData.non_field_errors[0]);
-        }
-      }
-      // Fallback error message
-      return thunkAPI.rejectWithValue("Registration failed. Please try again.");
-    }
-  }
-);
-
-// Refresh token thunk
-export const refreshToken = createAsyncThunk(
-  "auth/refreshToken",
-  async (_, thunkAPI) => {
-    try {
-      const refreshToken = localStorage.getItem("refreshToken");
-      if (!refreshToken) {
-        throw new Error("No refresh token available");
-      }
-
-      const response = await api.post("/users/refresh", { refreshToken });
-      const { accessToken, expiresIn } = response.data;
-
-      // Update access token in localStorage
-      localStorage.setItem("accessToken", accessToken);
-
-      // Restart refresh token timer
-      startRefreshTokenTimer(expiresIn);
-
-      return accessToken;
-    } catch (error: any) {
-      // Clear auth state on refresh token failure
-      thunkAPI.dispatch(logout());
       return thunkAPI.rejectWithValue(
-        error.response?.data?.message || "Session expired"
+        error.response?.data?.message || "Registration failed"
       );
     }
   }
 );
 
 // Logout thunk
-export const logout = createAsyncThunk("auth/logout", async (_, thunkAPI) => {
-  try {
-    const refreshToken = localStorage.getItem("refreshToken");
-    if (refreshToken) {
-      await api.post("/users/logout", { refreshToken });
+export const logoutUser = createAsyncThunk(
+  "auth/logout",
+  async (_, thunkAPI) => {
+    try {
+      const refreshToken = localStorage.getItem("refreshToken");
+      if (refreshToken) {
+        await api.post("/users/logout", { refreshToken });
+      }
+    } catch (error) {
+      console.error("Logout error:", error);
+    } finally {
+      // Clear auth state
+      localStorage.removeItem("accessToken");
+      localStorage.removeItem("refreshToken");
+      localStorage.removeItem("user");
+      return true;
     }
-  } catch (error) {
-    console.error("Logout error:", error);
-  } finally {
-    // Clear auth state and stop refresh timer
-    stopRefreshTokenTimer();
-    localStorage.removeItem("accessToken");
-    localStorage.removeItem("refreshToken");
-    localStorage.removeItem("user");
   }
-});
+);
 
 // Clear error
 export const clearError = () => (dispatch: any) => {
@@ -221,11 +152,17 @@ const authSlice = createSlice({
         state.refreshToken = action.payload.refreshToken;
         state.isAuthenticated = true;
         state.error = null;
+        // Store tokens and user in localStorage
+        localStorage.setItem("accessToken", action.payload.accessToken);
+        localStorage.setItem("refreshToken", action.payload.refreshToken);
+        localStorage.setItem("user", JSON.stringify(action.payload.user));
       })
       .addCase(login.rejected, (state, action) => {
         state.isLoading = false;
         state.error = action.payload as string;
         state.isAuthenticated = false;
+        state.user = null;
+        // Clear tokens and user from localStorage on failed login
         localStorage.removeItem("accessToken");
         localStorage.removeItem("refreshToken");
         localStorage.removeItem("user");
@@ -236,7 +173,7 @@ const authSlice = createSlice({
         state.isLoading = true;
         state.error = null;
       })
-      .addCase(register.fulfilled, (state) => {
+      .addCase(register.fulfilled, (state, action) => {
         state.isLoading = false;
         state.error = null;
       })
@@ -245,71 +182,37 @@ const authSlice = createSlice({
         state.error = action.payload as string;
       })
 
-      // Refresh Token
-      .addCase(refreshToken.fulfilled, (state, action) => {
-        state.accessToken = action.payload;
-      })
-      .addCase(refreshToken.rejected, (state) => {
-        state.isAuthenticated = false;
-        state.user = null;
-        state.accessToken = null;
-        state.refreshToken = null;
-      })
-
       // Logout
-      .addCase(logout.fulfilled, (state) => {
+      .addCase(logoutUser.pending, (state) => {
+        state.isLoading = true;
+      })
+      .addCase(logoutUser.fulfilled, (state) => {
         state.isAuthenticated = false;
         state.user = null;
         state.accessToken = null;
         state.refreshToken = null;
         state.error = null;
+        state.isLoading = false;
+        // Clear all auth data from localStorage
+        localStorage.removeItem("accessToken");
+        localStorage.removeItem("refreshToken");
+        localStorage.removeItem("user");
+      })
+      .addCase(logoutUser.rejected, (state) => {
+        // Even if logout fails, we want to clear the state
+        state.isAuthenticated = false;
+        state.user = null;
+        state.accessToken = null;
+        state.refreshToken = null;
+        state.error = null;
+        state.isLoading = false;
+        // Clear all auth data from localStorage
+        localStorage.removeItem("accessToken");
+        localStorage.removeItem("refreshToken");
+        localStorage.removeItem("user");
       });
   },
 });
-
-// Configure axios interceptors for automatic token refresh
-api.interceptors.request.use(
-  (config) => {
-    const token = localStorage.getItem("accessToken");
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
-    return config;
-  },
-  (error) => {
-    return Promise.reject(error);
-  }
-);
-
-api.interceptors.response.use(
-  (response) => response,
-  async (error) => {
-    const originalRequest = error.config;
-
-    // If error is 401 and we haven't tried to refresh token yet
-    if (error.response?.status === 401 && !originalRequest._retry) {
-      originalRequest._retry = true;
-
-      try {
-        // Try to refresh the token
-        const result = await refreshToken();
-        if ("payload" in result) {
-          const accessToken = result.payload;
-          // Update the failed request with new token
-          originalRequest.headers.Authorization = `Bearer ${accessToken}`;
-          return api(originalRequest);
-        }
-        throw new Error("Failed to refresh token");
-      } catch (refreshError) {
-        // If refresh fails, redirect to login
-        window.location.href = "/login";
-        return Promise.reject(refreshError);
-      }
-    }
-
-    return Promise.reject(error);
-  }
-);
 
 export const { setCredentials, markAppAsUsed, setError } = authSlice.actions;
 export default authSlice.reducer;
