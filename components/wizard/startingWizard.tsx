@@ -1,4 +1,4 @@
-"use client"
+"use client";
 
 import { useState } from "react";
 import Image from "next/image";
@@ -8,63 +8,38 @@ import StepTwo from "./wizard-layout/wizard-steps/step-two";
 import StepThree from "./wizard-layout/wizard-steps/step-three";
 import StepFour from "./wizard-layout/wizard-steps/step-four";
 import { useRouter } from "next/navigation";
-
-
-interface FormData {
-  maxPrice: number
-  foodPreference: string
-  dietaryPreference: string
-  locationEnabled: boolean
-  locationCoords?: { lat: number; lng: number }
-}
+import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
+import { setPromptData, completeWizard } from "@/lib/redux/slices/promptSlice";
 
 export default function StartingWizardRefactored() {
   const router = useRouter();
+  const dispatch = useAppDispatch();
+  const formData = useAppSelector((state) => state.prompt);
   const [currentStep, setCurrentStep] = useState(1);
-  const [formData, setFormData] = useState<FormData>({
-    maxPrice: 75,
-    foodPreference: "Surprise me, Choosee!",
-    dietaryPreference: "Not choosy atm!",
-    locationEnabled: false,
-  })
 
   const handleNext = async () => {
     if (currentStep < 4) {
-      setCurrentStep(currentStep + 1)
+      setCurrentStep(currentStep + 1);
     } else {
       try {
-        // Format the data according to the required structure
-        const formattedData = {
-          lat: formData.locationCoords?.lat || 10.3157,
-          lng: formData.locationCoords?.lng || 123.8854,
-          preferences: {
-            food_preference: formData.foodPreference,
-            dietary_preference: formData.dietaryPreference,
-            max_price: formData.maxPrice,
-          },
-        };
-
-        // Store the formatted data in localStorage
-        localStorage.setItem(
-          "wizardPreferences",
-          JSON.stringify(formattedData)
-        );
+        // Mark wizard as completed before navigating
+        dispatch(completeWizard());
         router.replace("/dashboard");
       } catch (error) {
         console.error("Error submitting form:", error);
       }
     }
-  }
+  };
 
   const handleBack = () => {
     if (currentStep > 1) {
-      setCurrentStep(currentStep - 1)
+      setCurrentStep(currentStep - 1);
     }
-  }
+  };
 
-  const updateFormData = (updates: Partial<FormData>) => {
-    setFormData((prev) => ({ ...prev, ...updates }))
-  }
+  const updateFormData = (updates: Partial<typeof formData>) => {
+    dispatch(setPromptData(updates));
+  };
 
   return (
     <div className="min-h-screen bg-[#FEF5E3] py-6 sm:py-8 px-3 sm:px-4 md:px-6 animate-gradient">
@@ -95,17 +70,38 @@ export default function StartingWizardRefactored() {
 
       {/* Step content */}
       <div className="flex justify-center items-center min-h-[50vh] sm:min-h-[55vh] md:min-h-[60vh]">
-        {currentStep === 1 && <StepOne formData={formData} updateFormData={updateFormData} onNext={handleNext} />}
+        {currentStep === 1 && (
+          <StepOne
+            formData={formData}
+            updateFormData={updateFormData}
+            onNext={handleNext}
+          />
+        )}
         {currentStep === 2 && (
-          <StepTwo formData={formData} updateFormData={updateFormData} onNext={handleNext} onBack={handleBack} />
+          <StepTwo
+            formData={formData}
+            updateFormData={updateFormData}
+            onNext={handleNext}
+            onBack={handleBack}
+          />
         )}
         {currentStep === 3 && (
-          <StepThree formData={formData} updateFormData={updateFormData} onNext={handleNext} onBack={handleBack} />
+          <StepThree
+            formData={formData}
+            updateFormData={updateFormData}
+            onNext={handleNext}
+            onBack={handleBack}
+          />
         )}
         {currentStep === 4 && (
-          <StepFour formData={formData} updateFormData={updateFormData} onNext={handleNext} onBack={handleBack} />
+          <StepFour
+            formData={formData}
+            updateFormData={updateFormData}
+            onNext={handleNext}
+            onBack={handleBack}
+          />
         )}
       </div>
     </div>
-  )
+  );
 }

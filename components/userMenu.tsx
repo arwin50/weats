@@ -2,21 +2,15 @@
 import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { User, LogOut, LogIn, UserPlus, ArrowLeft } from "lucide-react";
+import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
+import { logout } from "@/lib/redux/slices/authSlice";
 
-interface UserMenuProps {
-  isLoggedIn?: boolean;
-  onLogout?: () => void;
-  className?: string;
-}
-
-export function UserMenu({
-  isLoggedIn = false,
-  onLogout,
-  className = "",
-}: UserMenuProps) {
+export function UserMenu({ className = "" }: { className?: string }) {
   const [open, setOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
+  const dispatch = useAppDispatch();
+  const { isAuthenticated } = useAppSelector((state) => state.auth);
 
   // Close dropdown on outside click
   useEffect(() => {
@@ -33,6 +27,12 @@ export function UserMenu({
 
   const handleBackToDashboard = () => {
     router.push("/dashboard");
+  };
+
+  const handleLogout = () => {
+    dispatch(logout());
+    setOpen(false);
+    router.push("/");
   };
 
   return (
@@ -59,7 +59,7 @@ export function UserMenu({
 
       {open && (
         <div className="absolute top-full left-0 mt-2 w-32 sm:w-36 bg-[#5A9785] border border-[#5A9785] text-white rounded-lg shadow-lg">
-          {!isLoggedIn ? (
+          {!isAuthenticated ? (
             <>
               <div
                 onClick={() => {
@@ -84,10 +84,7 @@ export function UserMenu({
             </>
           ) : (
             <div
-              onClick={() => {
-                onLogout?.();
-                setOpen(false);
-              }}
+              onClick={handleLogout}
               className="flex items-center cursor-pointer py-3 px-4 hover:bg-[#477769] rounded-lg"
             >
               <LogOut className="mr-3 h-4 w-4" />

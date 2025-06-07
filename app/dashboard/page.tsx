@@ -1,12 +1,13 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { FoodMap, MapMarker } from "@/components/map";
 import { RestaurantListOverlay } from "@/components/RestaurantListOverlay";
 import { RestaurantModal } from "@/components/RestaurantModal";
 import { Eye, EyeOff } from "lucide-react";
 import { api, markAppAsUsed } from "@/lib/redux/slices/authSlice";
-import { useAppDispatch } from "@/lib/redux/hooks";
+import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
+import { useRouter } from "next/navigation";
 
 interface Restaurant {
   name: string;
@@ -28,27 +29,16 @@ interface ApiResponse {
   count: number;
 }
 
-interface WizardPreferences {
-  lat: number;
-  lng: number;
-  preferences: {
-    cuisine_type: string;
-    dietary_preference: string;
-    max_price: number;
-  };
-}
-
 export default function DashboardPage() {
+  const router = useRouter();
   const dispatch = useAppDispatch();
+  const promptData = useAppSelector((state) => state.prompt);
   const [placeMarkers, setPlaceMarkers] = useState<MapMarker[]>([]);
   const [center, setCenter] = useState({ lat: 10.3157, lng: 123.8854 });
   const [selectedRestaurant, setSelectedRestaurant] =
     useState<MapMarker | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isOverlayVisible, setIsOverlayVisible] = useState(true);
-  const [preferences, setPreferences] = useState<WizardPreferences | null>(
-    null
-  );
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -58,21 +48,20 @@ export default function DashboardPage() {
   }, [dispatch]);
 
   useEffect(() => {
-    // Load preferences from localStorage
-    const storedPreferences = localStorage.getItem("wizardPreferences");
-    if (storedPreferences) {
-      const parsedPreferences = JSON.parse(
-        storedPreferences
-      ) as WizardPreferences;
-      setPreferences(parsedPreferences);
-      setCenter({ lat: parsedPreferences.lat, lng: parsedPreferences.lng });
+    // Set center from Redux state
+    if (promptData.locationCoords) {
+      setCenter(promptData.locationCoords);
     }
-  }, []);
+  }, [promptData.locationCoords]);
 
   useEffect(() => {
-    // Fetch restaurants when preferences are loaded
+    // Fetch restaurants only when wizard is completed
     const fetchRestaurants = async () => {
-      if (preferences) {
+      if (
+        promptData.wizardCompleted &&
+        promptData.foodPreference &&
+        promptData.dietaryPreference
+      ) {
         try {
           // Clear previous data
           setPlaceMarkers([]);
@@ -82,9 +71,13 @@ export default function DashboardPage() {
           setError(null);
 
           const response = await api.post<ApiResponse>("/maps/search_places/", {
-            lat: preferences.lat,
-            lng: preferences.lng,
-            preferences: preferences.preferences,
+            lat: promptData.locationCoords?.lat || 10.3157,
+            lng: promptData.locationCoords?.lng || 123.8854,
+            preferences: {
+              food_prefernece: promptData.foodPreference,
+              dietary_preference: promptData.dietaryPreference,
+              max_price: promptData.maxPrice,
+            },
           });
 
           if (response.data.restaurants) {
@@ -107,6 +100,7 @@ export default function DashboardPage() {
         } catch (error) {
           console.error("Error fetching restaurants:", error);
           setError("Failed to fetch restaurants. Please try again.");
+          // Clear data on error
           setPlaceMarkers([]);
           setSelectedRestaurant(null);
           setIsModalOpen(false);
@@ -117,7 +111,7 @@ export default function DashboardPage() {
     };
 
     fetchRestaurants();
-  }, [preferences]);
+  }, [promptData.wizardCompleted]);
 
   const handleSelectRestaurant = (restaurant: MapMarker) => {
     setSelectedRestaurant(restaurant);
@@ -178,6 +172,7 @@ export default function DashboardPage() {
         restaurants={placeMarkers}
         onSelectRestaurant={handleSelectRestaurant}
         isVisible={isOverlayVisible}
+        preferences={promptData}
       />
 
       <RestaurantModal

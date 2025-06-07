@@ -7,6 +7,7 @@ import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import Image from "next/image";
 import { useSelector } from "react-redux";
 import Link from "next/link";
+import { api } from "@/lib/redux/slices/authSlice";
 
 interface RestaurantListOverlayProps {
   restaurants: MapMarker[];
@@ -27,20 +28,46 @@ export const RestaurantListOverlay = ({
   );
   const [showModal, setShowModal] = useState(false);
 
-  const handleSaveClick = () => {
-    console.log("Current user:", user);
-    console.log("Current preferences:", preferences);
+  const handleSaveClick = async () => {
     if (!isAuthenticated) {
       setShowModal(true);
-    } else {
+      return;
+    }
+
+    try {
+      const response = await api.post(
+        "/suggestions/save_suggestions/",
+        {
+          lat: preferences.lat,
+          lng: preferences.lng,
+          preferences: {
+            food_preference: preferences.food_preference,
+            dietary_preference: preferences.dietary_preference,
+            max_price: preferences.max_price,
+          },
+          restaurants,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${user.token}`,
+            "Content-Type": "application/json",
+          },
+          withCredentials: true,
+        }
+      );
+
       alert("Suggestions saved!");
+      console.log("Suggestion response:", response.data);
+    } catch (error: any) {
+      console.error("Save error:", error.response?.data || error.message);
+      alert("Failed to save suggestions.");
     }
   };
 
   return (
     <>
       <div
-        className={`absolute sm:fixed left-0 top-0 sm:top-12 h-screen w-screen sm:h-[90%] sm:w-1/2 bg-[#D5DBB5] border-8 border-[#D5DBB5] transform transition-transform duration-300 ease-in-out flex flex-col items-center ${
+        className={`absolute sm:fixed left-0 top-0 sm:top-12 h-screen w-screen sm:h-[90%] sm:w-[40%] bg-[#D5DBB5] border-8 border-[#D5DBB5] transform transition-transform duration-300 ease-in-out flex flex-col items-center ${
           isVisible ? "translate-x-0" : "-translate-x-full"
         }`}
       >
