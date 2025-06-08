@@ -38,7 +38,7 @@ export const RecentlyVisitedOverlay = ({
   if (error) {
     return (
       <div
-        className={`fixed left-0 top-20 h-[85%] w-[70%] sm:w-100 bg-[#B1A0C9] p-4 z-40 shadow-md rounded-r-3xl ${
+        className={`fixed left-0 top-22 sm:top-25  h-[85%] w-[70%] sm:w-100 bg-[#B1A0C9] p-4 z-40 shadow-md rounded-r-3xl ${
           isVisible ? "translate-x-0" : "-translate-x-full"
         }`}
       >
@@ -59,8 +59,7 @@ export const RecentlyVisitedOverlay = ({
       {recentlyVisited.map((restaurant, index) => (
         <div
           key={index}
-          className="bg-[#FEF5E3] rounded-xl p-4 mb-4 shadow-md flex items-start gap-4 hover:105"
-          onClick={() => onSelectRestaurant(restaurant)}
+          className="bg-[#FEF5E3] rounded-xl p-4 mb-4 shadow-md flex items-start gap-4"
         >
           <div className="relative w-16 h-24 rounded-lg overflow-hidden">
             {restaurant.photo_url ? (
@@ -107,6 +106,12 @@ export const RecentlyVisitedOverlay = ({
                   {restaurant.types[0].replace(/_/g, " ")}
                 </span>
               )}
+              <button
+                onClick={() => onSelectRestaurant(restaurant)}
+                className="text-sm px-3 py-1 bg-gray-200 hover:bg-gray-300 text-gray-800 rounded-full"
+              >
+                Details
+              </button>
             </div>
           </div>
         </div>

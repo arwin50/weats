@@ -10,6 +10,7 @@ import StepFour from "./wizard-layout/wizard-steps/step-four";
 import { useRouter } from "next/navigation";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { setPromptData, completeWizard } from "@/lib/redux/slices/promptSlice";
+import {ArrowLeft } from "lucide-react";
 
 export default function StartingWizardRefactored() {
   const router = useRouter();
@@ -40,9 +41,20 @@ export default function StartingWizardRefactored() {
   const updateFormData = (updates: Partial<typeof formData>) => {
     dispatch(setPromptData(updates));
   };
+  const handleBackToDashboard = () => {
+    router.push("/dashboard");
+  };
 
   return (
     <div className="min-h-screen bg-[#FEF5E3] py-6 sm:py-8 px-3 sm:px-4 md:px-6 animate-gradient">
+      <button
+        onClick={handleBackToDashboard}
+        className="fixed top-8 left-25 z-50 flex items-center gap-1 sm:gap-2 bg-[#5A9785] hover:bg-[#477769] text-white py-2 px-3 sm:py-3 sm:px-6 rounded-lg shadow-lg transition-colors text-sm sm:text-base cursor-pointer"
+      >
+        <ArrowLeft className="h-4 w-4 sm:h-5 sm:w-5" />
+        <span className="hidden xs:inline sm:inline">Back to Dashboard</span>
+        <span className="inline xs:hidden sm:hidden">Back</span>
+      </button>
       {/* Logo */}
       <div className="absolute top-3 right-3 sm:top-4 sm:right-4 md:top-4 md:right-8">
         <Image
