@@ -46,14 +46,14 @@ export function UserMenu({ className = "" }: { className?: string }) {
     >
       <button
         onClick={() => setOpen(!open)}
-        className={`cursor-pointer h-9 w-9 xs:h-10 xs:w-10 sm:h-12 sm:w-12 rounded-full bg-[#5feac1] hover:bg-[#32e4b0] text-white shadow-lg flex items-center justify-center ${className}`}
+        className={`cursor-pointer h-9 w-9 xs:h-10 xs:w-10 sm:h-12 sm:w-12 rounded-full bg-[#5feac1] hover:bg-[#32e4b0] text-gray-800 shadow-lg flex items-center justify-center ${className}`}
       >
         <User className="h-4 w-4 xs:h-5 xs:w-5 sm:h-6 sm:w-6 text-gray-800" />
         <span className="sr-only">User menu</span>
       </button>
 
       {open && (
-        <div className="absolute top-full left-0 mt-2 w-28 xs:w-32 sm:w-36 bg-[#81eece] text-white rounded-lg shadow-lg">
+        <div className="absolute top-full left-0 mt-2 w-28 xs:w-32 sm:w-36 bg-[#81eece] text-gray-800 rounded-lg shadow-lg">
           {!isAuthenticated ? (
             <>
               <div
