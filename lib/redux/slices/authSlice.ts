@@ -7,6 +7,7 @@ export const publicApi = axios.create({
   headers: {
     "Content-Type": "application/json",
   },
+  timeout: 0,
 });
 
 // Authorized API instance
@@ -16,6 +17,7 @@ export const authApi = axios.create({
     "Content-Type": "application/json",
   },
   withCredentials: true,
+  timeout: 0,
 });
 
 // Add request interceptor to add auth token
