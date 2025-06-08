@@ -3,7 +3,7 @@ import axios from "axios";
 
 // Public API instance (no auth required)
 export const publicApi = axios.create({
-  baseURL: "https://weats-backend.onrender.com/api",
+  baseURL: "https://weats-backend-vq2k6.ondigitalocean.app/api",
   headers: {
     "Content-Type": "application/json",
   },
@@ -11,7 +11,7 @@ export const publicApi = axios.create({
 
 // Authorized API instance
 export const authApi = axios.create({
-  baseURL: "https://weats-backend.onrender.com/api",
+  baseURL: "https://weats-backend-vq2k6.ondigitalocean.app/api",
   headers: {
     "Content-Type": "application/json",
   },
