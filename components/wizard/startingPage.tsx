@@ -10,7 +10,7 @@ import { useRouter } from "next/navigation";
 export default function StartingPage() {
   const router = useRouter();
   const handleBackToDashboard = () => {
-    router.push("@/app/dashboard");
+    router.push("/dashboard");
   };
   return (
     <div className="animate-gradient h-screen flex flex-col justify-center items-center bg-[#fdf1dc] text-cente px-4 overflow-hidden">
