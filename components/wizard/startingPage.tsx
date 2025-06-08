@@ -1,18 +1,18 @@
-"use client"
+"use client";
 
-import Image from "next/image"
-import Link from "next/link"
-import logo from "@/assets/images/logo.svg"
-import { UserMenu } from "@/components/userMenu"
-import { ArrowLeft } from "lucide-react"
-import { useRouter } from "next/navigation"
+import Image from "next/image";
+import Link from "next/link";
+import logo from "@/assets/images/logo.svg";
+import { UserMenu } from "@/components/userMenu";
+import { ArrowLeft } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 export default function StartingPage() {
-  const router = useRouter()
+  const router = useRouter();
 
   const handleBackToDashboard = () => {
-    router.push("/dashboard")
-  }
+    router.push("/dashboard");
+  };
 
   return (
     <div className="animate-gradient h-screen flex flex-col justify-center items-center bg-[#fdf1dc] text-center px-3 xs:px-4 overflow-hidden">
@@ -26,15 +26,17 @@ export default function StartingPage() {
         <span className="inline xs:hidden">Back</span>
       </button>
 
-      <p className="text-xl xs:text-2xl sm:text-4xl text-green-700">Hungry?</p>
+      <p className="text-[2.1rem] sm:text-[4rem] text-green-700 text-lg ">
+        Hungry?
+      </p>
 
-      <h1 className="text-2xl xs:text-3xl sm:text-6xl md:text-8xl lg:text-10xl text-[#cc4d4d] -mt-2 xs:-mt-4 sm:-mt-8 md:-mt-16 lg:-mt-24">
+      <h1 className="text-[3.5rem] sm:text-[10rem] text-[#cc4d4d] -mt-8 sm:-mt-24">
         Where do
       </h1>
-      <h1 className="text-2xl xs:text-3xl sm:text-6xl md:text-8xl lg:text-10xl text-orange-500 font-extrabold -mt-2 xs:-mt-4 sm:-mt-8 md:-mt-16 lg:-mt-24">
+      <h1 className="text-[3.5rem] sm:text-[10rem] text-orange-500 font-extrabold -mt-8 sm:-mt-24">
         YOU
       </h1>
-      <h1 className="text-xl xs:text-2xl sm:text-5xl md:text-7xl lg:text-8xl text-[#cc4d4d] -mt-2 xs:-mt-4 sm:-mt-6 md:-mt-8 lg:-mt-10">
+      <h1 className="text-[3rem] sm:text-[8rem] text-[#cc4d4d] -mt-10 sm:-mt-32">
         wanna eat?
       </h1>
 
@@ -55,5 +57,5 @@ export default function StartingPage() {
         />
       </div>
     </div>
-  )
+  );
 }
