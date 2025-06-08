@@ -38,7 +38,7 @@ export const RecentlyVisitedOverlay = ({
   if (error) {
     return (
       <div
-        className={`fixed left-0 top-20 h-[85%] w-[70%] sm:w-100 bg-[#B1A0C9] p-4 z-40 shadow-md rounded-r-3xl ${
+        className={`fixed left-0 top-22 sm:top-25  h-[85%] w-[70%] sm:w-100 bg-[#B1A0C9] p-4 z-40 shadow-md rounded-r-3xl ${
           isVisible ? "translate-x-0" : "-translate-x-full"
         }`}
       >
@@ -53,6 +53,9 @@ export const RecentlyVisitedOverlay = ({
         isVisible ? "translate-x-0" : "-translate-x-full"
       }`}
     >
+      <h1 className="text-2xl font-playfair font-semibold text-gray-800 mb-4">
+        Recently Visited
+      </h1>
       {recentlyVisited.map((restaurant, index) => (
         <div
           key={index}

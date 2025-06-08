@@ -14,6 +14,7 @@ import { FaBookOpen, FaMapMarkedAlt, FaUtensils } from "react-icons/fa";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import logo from "@/assets/images/logo.svg";
+import { UserMenu } from "@/components/userMenu";
 
 interface Restaurant {
   name: string;
@@ -245,24 +246,24 @@ export default function DashboardPage() {
 
   return (
     <div>
-      <div className="absolute fixed right-0 top-0 z-10">
+      <UserMenu />
+      <div className="fixed top-3 z-50 right-3 sm:top-4 sm:right-4 md:top-4 md:right-8">
         <Image
           src={logo || "/placeholder.svg"}
           alt="Logo"
-          width={80}
           height={80}
           className="object-contain sm:w-[100px] sm:h-[100px] md:w-[130px] md:h-[130px]"
         />
       </div>
       {/* Responsive button row at top left */}
-      <div className="fixed top-4 left-0 z-50 flex gap-2 sm:gap-4 items-center px-2 sm:px-6 py-2 w-full max-w-full overflow-x-auto bg-transparent">
+      <div className="fixed top-7 left-20 z-50 flex gap-2 sm:gap-4 items-center px-2 sm:px-6 py-2 w-full max-w-full overflow-x-auto bg-transparent">
         {/* Recycle button */}
         <button
           onClick={startWizard}
           className="bg-[#C95C5C] hover:bg-[#b94a4a] text-white rounded-xl px-3 py-2 flex items-center justify-center shadow-md focus:outline-none text-base sm:text-lg"
           aria-label="Restart Wizard"
         >
-          <FaRedo size={18} />
+          <FaRedo size={22} />
         </button>
         {/* Toggle overlays button */}
         <button
@@ -270,7 +271,7 @@ export default function DashboardPage() {
           className="bg-[#E0E0E0] hover:bg-[#cccccc] text-black rounded-xl px-3 py-2 flex items-center justify-center shadow-md focus:outline-none text-base sm:text-lg"
           aria-label="Toggle overlays"
         >
-          {isOverlayVisible ? <Eye size={18} /> : <EyeOff size={18} />}
+          {isOverlayVisible ? <Eye size={22} /> : <EyeOff size={22} />}
         </button>
         {/* Overlay action buttons, only visible when overlays are ON */}
         {isOverlayVisible && (
@@ -279,22 +280,22 @@ export default function DashboardPage() {
               onClick={() => setActiveOverlay("restaurant")}
               className="bg-[#D5DBB5] hover:bg-[#BFC89E] text-black rounded-xl px-3 py-2 flex items-center gap-1 sm:gap-2 shadow-md focus:outline-none font-semibold text-base sm:text-lg"
             >
-              <span className="font-bold">Suggestion</span>{" "}
-              <FaUtensils size={16} />
+              <FaUtensils size={22} />
+              <span className="hidden sm:inline ml-2">Suggestions</span>
             </button>
             <button
               onClick={() => setActiveOverlay("previous")}
               className="bg-[#FFF396] hover:bg-[#e6e272] text-black rounded-xl px-3 py-2 flex items-center gap-1 sm:gap-2 shadow-md focus:outline-none font-semibold text-base sm:text-lg"
             >
-              <span className="font-bold">View history</span>{" "}
-              <FaBookOpen size={16} />
+              <FaBookOpen size={22} />
+              <span className="hidden sm:inline ml-2">View History</span>
             </button>
             <button
               onClick={() => setActiveOverlay("recently")}
               className="bg-[#B1A0C9] hover:bg-[#927EB0] text-black rounded-xl px-3 py-2 flex items-center gap-1 sm:gap-2 shadow-md focus:outline-none font-semibold text-base sm:text-lg"
             >
-              <span className="font-bold">Recently Visited</span>{" "}
-              <FaMapMarkedAlt size={16} />
+              <FaMapMarkedAlt size={22} />
+              <span className="hidden sm:inline ml-2">Recently Visited</span>
             </button>
           </>
         )}

@@ -4,11 +4,23 @@ import Image from "next/image";
 import Link from "next/link";
 import logo from "@/assets/images/logo.svg";
 import { UserMenu } from "@/components/userMenu";
+import {ArrowLeft } from "lucide-react";
 
 export default function StartingPage() {
+  const handleBackToDashboard = () => {
+    router.push("@/app/dashboard");
+  };
   return (
     <div className="animate-gradient h-screen flex flex-col justify-center items-center bg-[#fdf1dc] text-cente px-4 overflow-hidden">
       <UserMenu />
+      <button
+        onClick={handleBackToDashboard}
+        className="fixed top-8 left-25 z-50 flex items-center gap-1 sm:gap-2 bg-[#5A9785] hover:bg-[#477769] text-white py-2 px-3 sm:py-3 sm:px-6 rounded-lg shadow-lg transition-colors text-sm sm:text-base cursor-pointer"
+      >
+        <ArrowLeft className="h-4 w-4 sm:h-5 sm:w-5" />
+        <span className="hidden xs:inline sm:inline">Back to Dashboard</span>
+        <span className="inline xs:hidden sm:hidden">Back</span>
+      </button>
       <p className="text-[2.1rem] sm:text-[4rem] text-green-700 text-lg ">
         Hungry?
       </p>
