@@ -45,18 +45,10 @@ export default function LoginPage() {
       {/* Login Form Container */}
       <div className="bg-[#E3E7D0] rounded-3xl p-6 w-full max-w-sm shadow-lg">
         <form onSubmit={handleSubmit} className="space-y-6">
-          {error && (
-            <div className="...">
-              {typeof error === "string"
-                ? error
-                : error.message || "An unexpected error occurred"}
-            </div>
-          )}
-
           {/* Username Field */}
           <div>
             <label className="block text-[#5F6856] text-lg font-medium mb-2">
-              Username
+              Email
             </label>
             <input
               type="email"
@@ -95,6 +87,14 @@ export default function LoginPage() {
               </button>
             </div>
           </div>
+
+          {error && (
+            <div className="...">
+              {typeof error === "string"
+                ? error
+                : error.message || "An unexpected error occurred"}
+            </div>
+          )}
 
           {/* Login Button */}
           <div className="pt-2">

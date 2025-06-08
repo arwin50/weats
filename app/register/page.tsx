@@ -66,14 +66,6 @@ export default function RegisterPage() {
       {/* Form Container */}
       <div className="bg-[#E3E7D0] rounded-3xl p-6 w-full max-w-sm shadow-lg">
         <form onSubmit={handleSubmit} className="space-y-5">
-          {(validationError ||
-            (typeof error === "string" ? error : error?.message)) && (
-            <div className="mb-4 rounded-xl border border-red-400 bg-red-100 px-4 py-3 text-sm text-red-700">
-              {validationError ||
-                (typeof error === "string" ? error : error?.message)}
-            </div>
-          )}
-
           {/* Email */}
           <div>
             <label className="block text-[#5F6856] text-lg font-medium mb-2">
@@ -163,6 +155,14 @@ export default function RegisterPage() {
               </button>
             </div>
           </div>
+
+          {(validationError ||
+            (typeof error === "string" ? error : error?.message)) && (
+            <div className="mb-4 rounded-xl border border-red-400 bg-red-100 px-4 py-3 text-sm text-red-700">
+              {validationError ||
+                (typeof error === "string" ? error : error?.message)}
+            </div>
+          )}
 
           {/* Submit */}
           <div className="pt-2">
