@@ -144,30 +144,11 @@ export const RestaurantListOverlay = ({
                     <span className="text-yellow-500">★</span>{" "}
                     <span>{restaurant.rating || "None"}</span>{" "}
                   </div>{" "}
-                  <div className="flex items-center gap-2 sm:gap-4 text-gray-700">
-                    {" "}
-                    <div className="flex items-center gap-1">
-                      {" "}
-                      <LocationOnIcon
-                        className="text-xs sm:text-sm"
-                        fontSize="small"
-                      />{" "}
-                      <span className="text-xs sm:text-sm">0.3km</span>{" "}
-                    </div>{" "}
-                    <div className="flex items-center gap-1">
-                      {" "}
-                      <AccessTimeIcon
-                        className="text-xs sm:text-sm"
-                        fontSize="small"
-                      />{" "}
-                      <span className="text-xs sm:text-sm">15 mins</span>{" "}
-                    </div>{" "}
-                  </div>{" "}
                 </div>{" "}
-                <div className="mt-1 flex justify-between items-center gap-2">
+                <div className="mt-4 flex justify-between items-center gap-2">
                   {" "}
                   {restaurant.types?.[0] && (
-                    <span className="bg-red-200 text-red-800 text-xs px-2 py-1 rounded-full truncate max-w-[60%]">
+                    <span className="bg-red-200 text-red-800 text-xs px-2 py-1 rounded-full truncate max-w-[100%]">
                       {" "}
                       {restaurant.types[0].replace(/_/g, " ")}{" "}
                     </span>

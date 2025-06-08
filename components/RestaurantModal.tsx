@@ -26,14 +26,14 @@ export const RestaurantModal = ({
   travelInfo,
   onVisitedUpdate,
 }: RestaurantModalProps) => {
-  const { user } = useAppSelector((state) => state.auth);
+  const { isAuthenticated } = useAppSelector((state) => state.auth);
   const [isVisited, setIsVisited] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const checkVisitedStatus = async () => {
-      if (!restaurant) return;
+      if (!restaurant || !isAuthenticated) return;
       try {
         const response = await authApi.post("/visited/check_visited/", {
           location: {
@@ -50,7 +50,7 @@ export const RestaurantModal = ({
     if (isOpen && restaurant) {
       checkVisitedStatus();
     }
-  }, [isOpen, restaurant]);
+  }, [isOpen, restaurant, isAuthenticated]);
 
   const handleToggleVisited = async () => {
     if (!restaurant) return;
@@ -125,7 +125,6 @@ export const RestaurantModal = ({
             Open
           </span>
         </div>
-
         {/* Rating */}
         {restaurant.rating && (
           <div className="flex items-center gap-2 mb-2">
@@ -138,7 +137,6 @@ export const RestaurantModal = ({
             )}
           </div>
         )}
-
         {/* Distance and time info */}
         {travelInfo && (
           <div className="text-sm text-gray-600 mt-2">
@@ -146,7 +144,6 @@ export const RestaurantModal = ({
             <p>⏱ Duration: {travelInfo.durationText}</p>
           </div>
         )}
-
         {/* Restaurant Address */}
         <div className="flex items-start gap-2 mb-2">
           <PlaceIcon
@@ -155,7 +152,6 @@ export const RestaurantModal = ({
           />
           <p className="text-gray-700 text-sm">{restaurant.address}</p>
         </div>
-
         {/* Cuisine types */}
         {restaurant.types && (
           <div className="flex flex-wrap gap-2 mb-3">
@@ -169,7 +165,6 @@ export const RestaurantModal = ({
             ))}
           </div>
         )}
-
         {/* About and Recommendations */}
         <div className="space-y-4">
           {restaurant.description && (
@@ -190,33 +185,35 @@ export const RestaurantModal = ({
             </div>
           )}
         </div>
-
         {/* Error message */}
         {error && (
           <div className="text-red-500 text-sm mb-4 text-center">{error}</div>
         )}
-
         {/* Mark as visited button */}
-        <button
-          onClick={handleToggleVisited}
-          disabled={isLoading}
-          className={`w-full ${
-            isVisited
-              ? "bg-gray-400 hover:bg-gray-500"
-              : "bg-[#5A9785] hover:bg-[#48796B]"
-          } text-white py-2 px-4 rounded-full font-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed`}
-        >
-          {user && isLoading ? (
-            <span className="flex items-center justify-center">
-              <div className="animate-spin rounded-full h-5 w-5 border-t-2 border-b-2 border-white mr-2"></div>
-              Updating...
-            </span>
-          ) : isVisited ? (
-            "Remove from Visited"
-          ) : (
-            "Mark as Visited"
-          )}
-        </button>
+        {isAuthenticated ? (
+          <button
+            onClick={handleToggleVisited}
+            disabled={isLoading}
+            className={`w-full ${
+              isVisited
+                ? "bg-gray-400 hover:bg-gray-500"
+                : "bg-[#5A9785] hover:bg-[#48796B]"
+            } text-white py-2 px-4 rounded-full font-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed`}
+          >
+            {isLoading ? (
+              <span className="flex items-center justify-center">
+                <div className="animate-spin rounded-full h-5 w-5 border-t-2 border-b-2 border-white mr-2"></div>
+                Updating...
+              </span>
+            ) : isVisited ? (
+              "Remove from Visited"
+            ) : (
+              "Mark as Visited"
+            )}
+          </button>
+        ) : (
+          <></>
+        )}
       </div>
     </div>
   );

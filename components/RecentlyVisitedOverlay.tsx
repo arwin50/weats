@@ -56,6 +56,9 @@ export const RecentlyVisitedOverlay = ({
       <h1 className="text-2xl font-playfair font-semibold text-gray-800 mb-4">
         Recently Visited
       </h1>
+      <p className="mb-3">
+        This is where restaurants you mark as visited will be displayed.
+      </p>
       {recentlyVisited.map((restaurant, index) => (
         <div
           key={index}
