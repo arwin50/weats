@@ -37,22 +37,27 @@ authApi.interceptors.response.use(
   async (error) => {
     const originalRequest = error.config;
     if (error.response?.status === 401 && !originalRequest._retry) {
-      console.log("Token expired, attempting refresh...");
       originalRequest._retry = true;
       try {
         const refreshToken = localStorage.getItem("refresh_token");
-        console.log("Refresh token found:", !!refreshToken);
-        const response = await publicApi.post("/users/refresh", {
+        if (!refreshToken) {
+          throw new Error("No refresh token available");
+        }
+
+        const response = await publicApi.post("/users/refresh/", {
           refresh: refreshToken,
         });
-        const { access } = response.data;
-        console.log("New access token received");
-        localStorage.setItem("access_token", access);
-        originalRequest.headers.Authorization = `Bearer ${access}`;
-        console.log("Retrying original request with new token");
-        return authApi(originalRequest);
+
+        if (response.data.access) {
+          localStorage.setItem("access_token", response.data.access);
+          originalRequest.headers.Authorization = `Bearer ${response.data.access}`;
+          return authApi(originalRequest);
+        }
       } catch (refreshError) {
-        console.error("Token refresh failed:", refreshError);
+        // Clear tokens and redirect to login on refresh failure
+        localStorage.removeItem("access_token");
+        localStorage.removeItem("refresh_token");
+        window.location.href = "/login";
         return Promise.reject(refreshError);
       }
     }
