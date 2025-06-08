@@ -25,15 +25,11 @@ export function UserMenu({ className = "" }: { className?: string }) {
     };
   }, []);
 
-  const handleBackToDashboard = () => {
-    router.push("/dashboard");
-  };
-
   const handleLogout = async () => {
     try {
       await dispatch(logoutUser()).unwrap();
       setOpen(false);
-      router.push("/");
+      router.push("/login");
     } catch (error) {
       console.error("Logout failed:", error);
       // Still close the menu and redirect even if logout fails
@@ -54,7 +50,6 @@ export function UserMenu({ className = "" }: { className?: string }) {
         <User className="h-6 w-6 sm:h-8 sm:w-8 text-[#FEF5E3]" />
         <span className="sr-only">User menu</span>
       </button>
-
 
       {open && (
         <div className="absolute top-full left-0 mt-2 w-32 sm:w-36 bg-[#5A9785] border border-[#5A9785] text-white rounded-lg shadow-lg">

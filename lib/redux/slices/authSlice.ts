@@ -3,7 +3,7 @@ import axios from "axios";
 
 // Public API instance (no auth required)
 export const publicApi = axios.create({
-  baseURL: "http://localhost:8000/api",
+  baseURL: "https://weats-backend.onrender.com/api",
   headers: {
     "Content-Type": "application/json",
   },
@@ -11,10 +11,11 @@ export const publicApi = axios.create({
 
 // Authorized API instance
 export const authApi = axios.create({
-  baseURL: "http://localhost:8000/api",
+  baseURL: "https://weats-backend.onrender.com/api",
   headers: {
     "Content-Type": "application/json",
   },
+  withCredentials: true,
 });
 
 // Add request interceptor to add auth token

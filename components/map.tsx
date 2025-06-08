@@ -15,7 +15,23 @@ const containerStyle = {
 };
 
 const getMarkerSymbol = (color: string, scale: number = 10) => {
-  if (typeof google === "undefined") return undefined;
+  // Check if Google Maps is fully loaded
+  if (
+    typeof google === "undefined" ||
+    !google.maps ||
+    !google.maps.SymbolPath
+  ) {
+    console.warn("Google Maps API not fully loaded");
+    return {
+      path: "CIRCLE", // Fallback to string path
+      fillColor: color,
+      fillOpacity: 0.9,
+      strokeColor: "#ffffff",
+      strokeWeight: 2,
+      scale,
+    };
+  }
+
   return {
     path: google.maps.SymbolPath.CIRCLE,
     fillColor: color,
@@ -40,6 +56,7 @@ export interface MapMarker {
   recommendation_reason?: string;
   rank?: number;
   photo_url?: string;
+  isVisited?: boolean;
 }
 
 interface MapProps {
@@ -58,19 +75,26 @@ export const FoodMap = ({ markers, center }: MapProps) => {
   const [routePath, setRoutePath] = useState<google.maps.LatLngLiteral[]>([]);
   const mapRef = React.useRef<google.maps.Map | null>(null);
   const [isLoaded, setIsLoaded] = useState(false);
+  const [isGoogleMapsReady, setIsGoogleMapsReady] = useState(false);
 
   const { isLoaded: googleMapsIsLoaded, loadError } = useLoadScript({
     googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || "",
   });
 
   useEffect(() => {
-    // Check if Google Maps is loaded
-    if (window.google && window.google.maps) {
+    // Check if Google Maps is fully loaded
+    if (window.google && window.google.maps && window.google.maps.SymbolPath) {
+      setIsGoogleMapsReady(true);
       setIsLoaded(true);
     } else {
       // If not loaded, set up a listener for when it loads
       const checkGoogleMaps = setInterval(() => {
-        if (window.google && window.google.maps) {
+        if (
+          window.google &&
+          window.google.maps &&
+          window.google.maps.SymbolPath
+        ) {
+          setIsGoogleMapsReady(true);
           setIsLoaded(true);
           clearInterval(checkGoogleMaps);
         }
@@ -96,14 +120,15 @@ export const FoodMap = ({ markers, center }: MapProps) => {
 
   const getMarkerStyle = (marker: MapMarker) => {
     let color = "#E26F43"; // default
-    if (marker.rating && marker.rating >= 4.5) color = "#4CAF50";
+    if (marker.isVisited) color = "#4CAF50"; // Green for visited
+    else if (marker.rating && marker.rating >= 4.5) color = "#4CAF50";
     else if (marker.price_level && marker.price_level >= 3) color = "#9C27B0";
 
     const scale = marker.rank ? Math.max(10, 14 - marker.rank * 0.5) : 10;
     return getMarkerSymbol(color, scale);
   };
 
-  if (!isLoaded) {
+  if (!isLoaded || !isGoogleMapsReady) {
     return (
       <div className="w-full h-full flex items-center justify-center bg-gray-100">
         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#5A9785]"></div>
@@ -155,23 +180,31 @@ export const FoodMap = ({ markers, center }: MapProps) => {
           zIndex={1000}
         />
 
-        {markers.map((marker, index) => (
-          <Marker
-            key={index}
-            position={{ lat: marker.lat, lng: marker.lng }}
-            title={marker.name}
-            onClick={() => handleMarkerClick(marker)}
-            icon={getMarkerStyle(marker)}
-            label={{
-              text: marker.rank?.toString() || "",
-              color: "#ffffff",
-              fontSize: marker.rank
-                ? `${Math.max(14, 18 - marker.rank)}px`
-                : "14px",
-              fontWeight: "bold",
-            }}
-          />
-        ))}
+        {markers.map((marker, index) => {
+          // Debug log for marker data
+          console.log("Rendering marker:", {
+            name: marker.name,
+            rank: marker.rank,
+            rankType: typeof marker.rank,
+            isVisited: marker.isVisited,
+          });
+
+          return (
+            <Marker
+              key={index}
+              position={{ lat: marker.lat, lng: marker.lng }}
+              title={marker.name}
+              onClick={() => handleMarkerClick(marker)}
+              icon={getMarkerStyle(marker)}
+              label={{
+                text: marker.isVisited ? "V" : "UV",
+                color: "#ffffff",
+                fontSize: "14px",
+                fontWeight: "bold",
+              }}
+            />
+          );
+        })}
 
         {routePath.length > 0 && (
           <Polyline

@@ -77,8 +77,9 @@ export const RestaurantModal = ({
 
       setIsVisited(response.data.is_visited);
 
+      // Call the update function to refresh visited locations
       if (onVisitedUpdate) {
-        onVisitedUpdate();
+        await onVisitedUpdate();
       }
     } catch (err) {
       console.error("Error toggling visited status:", err);

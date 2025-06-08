@@ -9,8 +9,7 @@ import { RestaurantModal } from "@/components/RestaurantModal";
 import { Eye, EyeOff } from "lucide-react";
 import { authApi, publicApi } from "@/lib/redux/slices/authSlice";
 import { useAppSelector } from "@/lib/redux/hooks";
-import { FaRedo } from "react-icons/fa";
-import { FaBookOpen, FaMapMarkedAlt, FaUtensils } from "react-icons/fa";
+import { FaBookOpen, FaMapMarkedAlt, FaUtensils, FaRedo } from "react-icons/fa";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import logo from "@/assets/images/logo.svg";
@@ -42,6 +41,7 @@ export default function DashboardPage() {
   const promptData = useAppSelector((state) => state.prompt);
   const authData = useAppSelector((state) => state.auth);
   const [placeMarkers, setPlaceMarkers] = useState<MapMarker[]>([]);
+  const [combinedMarkers, setCombinedMarkers] = useState<MapMarker[]>([]);
   const [center, setCenter] = useState({ lat: 10.3157, lng: 123.8854 });
   const [selectedRestaurant, setSelectedRestaurant] =
     useState<MapMarker | null>(null);
@@ -76,6 +76,25 @@ export default function DashboardPage() {
   }, [promptData.locationCoords]);
 
   useEffect(() => {
+    const allMarkers = [...placeMarkers];
+
+    // Add visited locations with a different style
+    visitedLocations.forEach((visited) => {
+      // Check if this location is already in placeMarkers
+      const exists = placeMarkers.some((marker) => marker.id === visited.id);
+      if (!exists) {
+        allMarkers.push({
+          ...visited,
+          isVisited: true, // Add a flag to identify visited locations
+        });
+      }
+    });
+
+    // Update the combined markers
+    setCombinedMarkers(allMarkers);
+  }, [placeMarkers, visitedLocations]);
+
+  useEffect(() => {
     // Fetch restaurants only when wizard is completed
     const fetchRestaurants = async () => {
       if (
@@ -105,20 +124,30 @@ export default function DashboardPage() {
           );
 
           if (response.data.restaurants) {
+            console.log("Raw restaurant data:", response.data.restaurants);
             const markers: MapMarker[] = response.data.restaurants.map(
-              (restaurant) => ({
-                id: restaurant.id,
-                name: restaurant.name,
-                address: restaurant.address,
-                lat: restaurant.lat,
-                lng: restaurant.lng,
-                rating: restaurant.rating,
-                price_level: restaurant.price_level,
-                types: restaurant.types,
-                rank: restaurant.rank,
-                photo_url: restaurant.photo_url,
-              })
+              (restaurant) => {
+                console.log("Processing restaurant:", {
+                  name: restaurant.name,
+                  rank: restaurant.rank,
+                  rankType: typeof restaurant.rank,
+                });
+                return {
+                  id: restaurant.id?.toString() || "", // Ensure id is always a string
+                  name: restaurant.name,
+                  address: restaurant.address,
+                  lat: restaurant.lat,
+                  lng: restaurant.lng,
+                  rating: restaurant.rating,
+                  price_level: restaurant.price_level,
+                  types: restaurant.types,
+                  rank: Number(restaurant.rank), // Ensure rank is a number
+                  photo_url: restaurant.photo_url,
+                  isVisited: false, // Add flag for suggested locations
+                };
+              }
             );
+            console.log("Processed markers:", markers);
             setPlaceMarkers(markers);
           }
         } catch (error: any) {
@@ -189,38 +218,52 @@ export default function DashboardPage() {
     promptData.maxPrice,
   ]);
 
-  useEffect(() => {
-    const fetchVisitedLocations = async () => {
-      try {
-        setIsLoadingVisited(true);
-        const response = await authApi.get("/visited/");
-        const locations: MapMarker[] = response.data.visited_locations.map(
-          (location: any) => ({
-            id: location.id?.toString() || "", // Ensure id is always a string
-            name: location.name || "",
-            address: location.address || "",
-            lat: location.lat || 0,
-            lng: location.lng || 0,
-            rating: location.rating,
-            user_ratings_total: location.user_ratings_total,
-            price_level: location.price_level,
-            types: location.types || [],
-            description: location.description,
-            recommendation_reason: location.recommendation_reason,
-            photo_url: location.photo_url,
-          })
-        );
-        setVisitedLocations(locations);
-      } catch (error) {
-        console.error("Error fetching visited locations:", error);
-        setVisitedError("Failed to load visited locations");
-      } finally {
-        setIsLoadingVisited(false);
-      }
-    };
+  // Add this function to handle visited updates
+  const handleVisitedUpdate = async () => {
+    if (!authData.isAuthenticated) return;
+    try {
+      setIsLoadingVisited(true);
+      const response = await authApi.get("/visited/");
 
+      // Debug logging
+      console.log("Visited locations response:", response.data);
+
+      // Check if response data is an array
+      if (!Array.isArray(response.data)) {
+        console.log("Response data is not an array:", response.data);
+        setVisitedLocations([]);
+        return;
+      }
+
+      const locations: MapMarker[] = response.data.map((location: any) => ({
+        id: location.id?.toString() || "", // Ensure id is always a string
+        name: location.name || "",
+        address: location.address || "",
+        lat: location.lat || 0,
+        lng: location.lng || 0,
+        rating: location.rating,
+        user_ratings_total: location.user_ratings_total,
+        price_level: location.price_level,
+        types: location.types || [],
+        description: location.description,
+        recommendation_reason: location.recommendation_reason,
+        photo_url: location.photo_url,
+      }));
+      console.log("Processed locations:", locations);
+      setVisitedLocations(locations);
+    } catch (error) {
+      console.error("Error fetching visited locations:", error);
+      setVisitedError("Failed to load visited locations");
+      setVisitedLocations([]); // Set empty array on error
+    } finally {
+      setIsLoadingVisited(false);
+    }
+  };
+
+  // Update the useEffect to use the new function
+  useEffect(() => {
     if (authData.isAuthenticated) {
-      fetchVisitedLocations();
+      handleVisitedUpdate();
     }
   }, [authData.isAuthenticated]);
 
@@ -348,7 +391,7 @@ export default function DashboardPage() {
         </div>
       )}
 
-      <FoodMap markers={placeMarkers} center={center} />
+      <FoodMap markers={combinedMarkers} center={center} />
 
       {isOverlayVisible && activeOverlay === "restaurant" && (
         <RestaurantListOverlay
@@ -381,6 +424,7 @@ export default function DashboardPage() {
         restaurant={selectedRestaurant}
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
+        onVisitedUpdate={handleVisitedUpdate}
       />
     </div>
   );

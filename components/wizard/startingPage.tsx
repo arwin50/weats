@@ -4,9 +4,11 @@ import Image from "next/image";
 import Link from "next/link";
 import logo from "@/assets/images/logo.svg";
 import { UserMenu } from "@/components/userMenu";
-import {ArrowLeft } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 export default function StartingPage() {
+  const router = useRouter();
   const handleBackToDashboard = () => {
     router.push("@/app/dashboard");
   };
