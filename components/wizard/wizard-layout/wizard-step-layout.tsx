@@ -1,6 +1,5 @@
 "use client"
 
-import { UserMenu } from "@/components/userMenu"
 import type { ReactNode } from "react"
 
 interface WizardStepLayoutProps {
@@ -28,7 +27,6 @@ export default function WizardStepLayout({
 }: WizardStepLayoutProps) {
   return (
     <div className={`w-full ${wide ? "max-w-5xl" : "max-w-2xl"} mx-auto px-4 sm:px-6`}>
-      <UserMenu />
       {/* Title block with fixed min-height to avoid layout shift */}
       <div className="min-h-[3.5rem] sm:min-h-[4.5rem] md:min-h-[5rem] flex items-center justify-center px-2 sm:px-4 mb-6 sm:mb-8 text-center">
         <h1 className="text-2xl sm:text-3xl md:text-4xl text-teal-700">{title}</h1>

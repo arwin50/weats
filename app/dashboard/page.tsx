@@ -1,12 +1,12 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { FoodMap, MapMarker } from "@/components/map";
+import { FoodMap, type MapMarker } from "@/components/map";
 import { RestaurantListOverlay } from "@/components/RestaurantListOverlay";
 import { PreviousPromptOverlay } from "@/components/PreviousPromptOverlay";
 import { RecentlyVisitedOverlay } from "@/components/RecentlyVisitedOverlay";
 import { RestaurantModal } from "@/components/RestaurantModal";
-import { Eye, EyeOff } from "lucide-react";
+import { ChevronDown, ChevronRight } from "lucide-react";
 import { authApi, publicApi } from "@/lib/redux/slices/authSlice";
 import { useAppSelector } from "@/lib/redux/hooks";
 import { FaBookOpen, FaMapMarkedAlt, FaUtensils, FaRedo } from "react-icons/fa";
@@ -280,8 +280,15 @@ export default function DashboardPage() {
   };
 
   const toggleOverlayVisibility = () => {
-    setIsOverlayVisible((prev) => !prev);
-    setSelectedRestaurant(null);
+    if (isModalOpen) {
+      // If modal is open, close it and show overlays
+      setIsModalOpen(false);
+      setSelectedRestaurant(null);
+      setIsOverlayVisible(true);
+    } else {
+      // Normal toggle behavior when modal is not open
+      setIsOverlayVisible((prev) => !prev);
+    }
   };
 
   const startWizard = () => {
@@ -302,71 +309,93 @@ export default function DashboardPage() {
     setActiveOverlay("restaurant");
   };
 
+  const handleModalClose = () => {
+    setIsModalOpen(false);
+    setSelectedRestaurant(null);
+  };
+
+  // Determine if overlays are effectively visible (not when modal is open)
+  const effectiveOverlayVisibility = isOverlayVisible && !isModalOpen;
+
   return (
     <div>
       <UserMenu />
-      <div className="fixed top-3 z-50 right-3 sm:top-4 sm:right-4 md:top-4 md:right-8">
+      <div className="fixed z-50 right-14">
         <Image
           src={logo || "/placeholder.svg"}
           alt="Logo"
-          height={80}
-          className="object-contain sm:w-[100px] sm:h-[100px] md:w-[130px] md:h-[130px]"
+          height={60}
+          className="object-contain sm:w-[80px] sm:h-[80px] md:w-[100px] md:h-[100px] lg:w-[130px] lg:h-[130px]"
         />
       </div>
-      {/* Responsive button row at top left */}
-      <div className="fixed top-7 left-20 z-50 flex gap-2 sm:gap-4 items-center px-2 sm:px-6 py-2 w-full max-w-full overflow-x-auto bg-transparent">
+
+      {/* Responsive button row - always visible */}
+      <div className="fixed top-4 xs:top-6 sm:top-7 left-14 xs:left-18 sm:left-22 z-50 flex gap-1 sm:gap-2 md:gap-4 items-center w-auto max-w-[calc(100vw-200px)] sm:max-w-[calc(100vw-250px)] md:max-w-[calc(100vw-300px)] overflow-x-auto bg-transparent">
         {/* Recycle button */}
         <button
           onClick={startWizard}
-          className="bg-[#C95C5C] hover:bg-[#b94a4a] text-white rounded-xl px-3 py-2 flex items-center justify-center shadow-md focus:outline-none text-base sm:text-lg"
+          className="bg-[#C95C5C] hover:bg-[#b94a4a] text-gray-800 rounded-xl px-2 py-2 sm:px-3 sm:py-2 flex items-center justify-center shadow-md focus:outline-none text-sm sm:text-base md:text-lg flex-shrink-0"
           aria-label="Restart Wizard"
         >
-          <FaRedo size={22} />
+          <FaRedo size={16} className="sm:w-5 sm:h-5 md:w-6 md:h-6" />
         </button>
-        {/* Toggle overlays button */}
+
+        {/* Toggle overlays button - shows state based on effective visibility */}
         <button
-          onClick={() => setIsOverlayVisible((v) => !v)}
-          className="bg-[#E0E0E0] hover:bg-[#cccccc] text-black rounded-xl px-3 py-2 flex items-center justify-center shadow-md focus:outline-none text-base sm:text-lg"
+          onClick={toggleOverlayVisibility}
+          className="bg-[#E0E0E0] hover:bg-[#cccccc] text-gray-800 rounded-xl px-2 py-2 sm:px-3 sm:py-2 flex items-center justify-center shadow-md focus:outline-none text-sm sm:text-base md:text-lg flex-shrink-0"
           aria-label="Toggle overlays"
         >
-          {isOverlayVisible ? <Eye size={22} /> : <EyeOff size={22} />}
+          {effectiveOverlayVisibility ? (
+            <ChevronDown size={16} className="sm:w-5 sm:h-5 md:w-6 md:h-6" />
+          ) : (
+            <ChevronRight size={16} className="sm:w-5 sm:h-5 md:w-6 md:h-6" />
+          )}
         </button>
-        {/* Overlay action buttons, only visible when overlays are ON */}
-        {isOverlayVisible && (
+
+        {/* Overlay action buttons, only visible when overlays are effectively ON */}
+        {effectiveOverlayVisibility && (
           <>
             <button
               onClick={() => setActiveOverlay("restaurant")}
-              className="bg-[#D5DBB5] hover:bg-[#BFC89E] text-black rounded-xl px-3 py-2 flex items-center gap-1 sm:gap-2 shadow-md focus:outline-none font-semibold text-base sm:text-lg"
+              className="bg-[#D5DBB5] hover:bg-[#BFC89E] text-gray-800 rounded-xl px-2 py-2 sm:px-3 sm:py-2 flex items-center gap-1 sm:gap-2 shadow-md focus:outline-none font-semibold text-sm sm:text-base md:text-lg flex-shrink-0"
             >
-              <FaUtensils size={22} />
-              <span className="hidden sm:inline ml-2">Suggestions</span>
+              <FaUtensils size={16} className="sm:w-5 sm:h-5 md:w-6 md:h-6" />
+              <span className="hidden lg:inline ml-1 sm:ml-2">Suggestions</span>
             </button>
             <button
               onClick={() => setActiveOverlay("previous")}
-              className="bg-[#FFF396] hover:bg-[#e6e272] text-black rounded-xl px-3 py-2 flex items-center gap-1 sm:gap-2 shadow-md focus:outline-none font-semibold text-base sm:text-lg"
+              className="bg-[#FFF396] hover:bg-[#e6e272] text-gray-800 rounded-xl px-2 py-2 sm:px-3 sm:py-2 flex items-center gap-1 sm:gap-2 shadow-md focus:outline-none font-semibold text-sm sm:text-base md:text-lg flex-shrink-0"
             >
-              <FaBookOpen size={22} />
-              <span className="hidden sm:inline ml-2">View History</span>
+              <FaBookOpen size={16} className="sm:w-5 sm:h-5 md:w-6 md:h-6" />
+              <span className="hidden lg:inline ml-1 sm:ml-2">
+                View History
+              </span>
             </button>
             <button
               onClick={() => setActiveOverlay("recently")}
-              className="bg-[#B1A0C9] hover:bg-[#927EB0] text-black rounded-xl px-3 py-2 flex items-center gap-1 sm:gap-2 shadow-md focus:outline-none font-semibold text-base sm:text-lg"
+              className="bg-[#B1A0C9] hover:bg-[#927EB0] text-gray-800 rounded-xl px-2 py-2 sm:px-3 sm:py-2 flex items-center gap-1 sm:gap-2 shadow-md focus:outline-none font-semibold text-sm sm:text-base md:text-lg flex-shrink-0"
             >
-              <FaMapMarkedAlt size={22} />
-              <span className="hidden sm:inline ml-2">Recently Visited</span>
+              <FaMapMarkedAlt
+                size={16}
+                className="sm:w-5 sm:h-5 md:w-6 md:h-6"
+              />
+              <span className="hidden lg:inline ml-1 sm:ml-2">
+                Recently Visited
+              </span>
             </button>
           </>
         )}
       </div>
 
       {isLoading && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white p-8 rounded-2xl shadow-xl text-center">
-            <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-[#5A9785] mx-auto mb-4"></div>
-            <h2 className="text-xl font-semibold text-gray-800 mb-2">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white p-6 sm:p-8 rounded-2xl shadow-xl text-center max-w-sm w-full">
+            <div className="animate-spin rounded-full h-12 w-12 sm:h-16 sm:w-16 border-t-2 border-b-2 border-[#5A9785] mx-auto mb-4"></div>
+            <h2 className="text-lg sm:text-xl font-semibold text-gray-800 mb-2">
               Finding the best restaurants...
             </h2>
-            <p className="text-gray-600">
+            <p className="text-sm sm:text-base text-gray-600">
               Please wait while we search for amazing places near you
             </p>
           </div>
@@ -374,16 +403,16 @@ export default function DashboardPage() {
       )}
 
       {error && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white p-8 rounded-2xl shadow-xl text-center">
-            <div className="text-red-500 text-4xl mb-4">⚠️</div>
-            <h2 className="text-xl font-semibold text-gray-800 mb-2">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white p-6 sm:p-8 rounded-2xl shadow-xl text-center max-w-sm w-full">
+            <div className="text-red-500 text-3xl sm:text-4xl mb-4">⚠️</div>
+            <h2 className="text-lg sm:text-xl font-semibold text-gray-800 mb-2">
               Oops! Something went wrong
             </h2>
-            <p className="text-gray-600 mb-4">{error}</p>
+            <p className="text-sm sm:text-base text-gray-600 mb-4">{error}</p>
             <button
               onClick={() => window.location.reload()}
-              className="bg-[#5A9785] text-white px-6 py-2 rounded-full hover:bg-[#48796B] transition-colors"
+              className="bg-[#5A9785] text-white px-4 sm:px-6 py-2 rounded-full hover:bg-[#48796B] transition-colors text-sm sm:text-base"
             >
               Try Again
             </button>
@@ -393,7 +422,8 @@ export default function DashboardPage() {
 
       <FoodMap markers={combinedMarkers} center={center} />
 
-      {isOverlayVisible && activeOverlay === "restaurant" && (
+      {/* Overlays - only visible when effectively on (not when modal is open) */}
+      {effectiveOverlayVisibility && activeOverlay === "restaurant" && (
         <RestaurantListOverlay
           restaurants={placeMarkers}
           onSelectRestaurant={handleSelectRestaurant}
@@ -401,7 +431,7 @@ export default function DashboardPage() {
           preferences={promptData}
         />
       )}
-      {isOverlayVisible && activeOverlay === "previous" && (
+      {effectiveOverlayVisibility && activeOverlay === "previous" && (
         <PreviousPromptOverlay
           isVisible={activeOverlay === "previous"}
           onSelectPrompt={handleSelectPreviousPrompt}
@@ -410,9 +440,9 @@ export default function DashboardPage() {
           }
         />
       )}
-      {isOverlayVisible && activeOverlay === "recently" && (
+      {effectiveOverlayVisibility && activeOverlay === "recently" && (
         <RecentlyVisitedOverlay
-          isVisible={isOverlayVisible}
+          isVisible={effectiveOverlayVisibility}
           recentlyVisited={visitedLocations}
           onSelectRestaurant={handleSelectRestaurant}
           isLoading={isLoadingVisited}
@@ -423,7 +453,7 @@ export default function DashboardPage() {
       <RestaurantModal
         restaurant={selectedRestaurant}
         isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
+        onClose={handleModalClose}
         onVisitedUpdate={handleVisitedUpdate}
       />
     </div>

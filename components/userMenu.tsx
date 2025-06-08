@@ -1,7 +1,8 @@
 "use client";
+
 import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { User, LogOut, LogIn, UserPlus, ArrowLeft } from "lucide-react";
+import { User, LogOut, LogIn, UserPlus } from "lucide-react";
 import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import { logoutUser } from "@/lib/redux/slices/authSlice";
 
@@ -40,19 +41,19 @@ export function UserMenu({ className = "" }: { className?: string }) {
 
   return (
     <div
-      className="fixed top-4 left-4 sm:top-6 sm:left-6 z-50 flex items-center gap-2 sm:gap-4"
+      className="fixed top-3 left-3 xs:top-4 xs:left-4 sm:top-6 sm:left-6 z-50 flex items-center gap-2 sm:gap-4"
       ref={menuRef}
     >
       <button
         onClick={() => setOpen(!open)}
-        className={`cursor-pointer h-12 w-12 sm:h-16 sm:w-16 rounded-full bg-[#1BCC98] hover:bg-[#129C73] text-white shadow-lg flex items-center justify-center ${className}`}
+        className={`cursor-pointer h-9 w-9 xs:h-10 xs:w-10 sm:h-12 sm:w-12 rounded-full bg-[#5feac1] hover:bg-[#32e4b0] text-white shadow-lg flex items-center justify-center ${className}`}
       >
-        <User className="h-6 w-6 sm:h-8 sm:w-8 text-[#FEF5E3]" />
+        <User className="h-4 w-4 xs:h-5 xs:w-5 sm:h-6 sm:w-6 text-gray-800" />
         <span className="sr-only">User menu</span>
       </button>
 
       {open && (
-        <div className="absolute top-full left-0 mt-2 w-32 sm:w-36 bg-[#5A9785] border border-[#5A9785] text-white rounded-lg shadow-lg">
+        <div className="absolute top-full left-0 mt-2 w-28 xs:w-32 sm:w-36 bg-[#81eece] text-white rounded-lg shadow-lg">
           {!isAuthenticated ? (
             <>
               <div
@@ -60,9 +61,9 @@ export function UserMenu({ className = "" }: { className?: string }) {
                   setOpen(false);
                   router.push("/login");
                 }}
-                className="flex items-center cursor-pointer py-3 px-4 hover:bg-[#477769] rounded-lg"
+                className="flex items-center cursor-pointer py-2 xs:py-3 px-3 xs:px-4 hover:bg-[#5feac1] rounded-lg text-xs xs:text-sm sm:text-base text-gray-800"
               >
-                <LogIn className="mr-2 h-4 w-4" />
+                <LogIn className="mr-2 h-3 w-3 xs:h-4 xs:w-4 text-gray-800" />
                 Log-in
               </div>
               <div
@@ -70,18 +71,18 @@ export function UserMenu({ className = "" }: { className?: string }) {
                   setOpen(false);
                   router.push("/register");
                 }}
-                className="flex items-center cursor-pointer py-3 px-4 hover:bg-[#477769] rounded-lg"
+                className="flex items-center cursor-pointer py-2 xs:py-3 px-3 xs:px-4 hover:bg-[#5feac1] rounded-lg text-xs xs:text-sm sm:text-base text-gray-800"
               >
-                <UserPlus className="mr-2 h-4 w-4" />
+                <UserPlus className="mr-2 h-3 w-3 xs:h-4 xs:w-4 text-gray-800" />
                 Sign-up
               </div>
             </>
           ) : (
             <div
               onClick={handleLogout}
-              className="flex items-center cursor-pointer py-3 px-4 hover:bg-[#477769] rounded-lg"
+              className="flex items-center cursor-pointer py-2 xs:py-3 px-3 xs:px-4 hover:bg-[#5feac1] rounded-lg text-xs xs:text-sm sm:text-base text-gray-800"
             >
-              <LogOut className="mr-3 h-4 w-4" />
+              <LogOut className="mr-2 h-3 w-3 xs:h-4 xs:w-4 text-gray-800" />
               Log-out
             </div>
           )}
