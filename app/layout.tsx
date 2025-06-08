@@ -5,7 +5,7 @@ import AuthInitializer from "@/components/AuthInitializer";
 
 export const metadata: Metadata = {
   title: "Weats",
-  description: "Where do YOU wanna eat?",
+  description: "Your personal food recommendation app",
 };
 
 export default function RootLayout({

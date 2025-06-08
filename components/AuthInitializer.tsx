@@ -2,28 +2,29 @@
 
 import { useEffect } from "react";
 import { useDispatch } from "react-redux";
-import { initializeAuth, getUserData } from "@/lib/redux/slices/authSlice";
+import { AppDispatch } from "@/lib/redux/store";
+import { getUserData } from "@/lib/redux/slices/authSlice";
 
-export default function AuthInitializer() {
-  const dispatch = useDispatch();
+const AuthInitializer = () => {
+  const dispatch = useDispatch<AppDispatch>();
 
   useEffect(() => {
-    try {
-      if (typeof window !== "undefined") {
-        console.log("Initializing auth state...");
-        dispatch(initializeAuth());
-
-        // If we have a token, fetch fresh user data
-        const token = localStorage.getItem("access_token");
+    const initializeAuth = async () => {
+      try {
+        const token = localStorage.getItem("accessToken");
         if (token) {
           console.log("Fetching fresh user data...");
-          dispatch(getUserData());
+          await dispatch(getUserData()).unwrap();
         }
+      } catch (error) {
+        console.error("Error initializing auth:", error);
       }
-    } catch (error) {
-      console.error("Error initializing auth:", error);
-    }
+    };
+
+    initializeAuth();
   }, [dispatch]);
 
   return null;
-}
+};
+
+export default AuthInitializer;
