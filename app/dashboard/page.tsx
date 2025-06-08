@@ -15,6 +15,7 @@ import { useRouter } from "next/navigation";
 import Image from "next/image";
 import logo from "@/assets/images/logo.svg";
 import { UserMenu } from "@/components/userMenu";
+import { setPromptData } from "@/lib/redux/slices/promptSlice";
 
 interface Restaurant {
   name: string;
@@ -244,6 +245,20 @@ export default function DashboardPage() {
     router.push("/startingWizard");
   };
 
+  const handleSelectPreviousPrompt = (prompt: {
+    locationCoords: { lat: number; lng: number };
+    foodPreference: string;
+    dietaryPreference: string;
+    maxPrice?: number;
+  }) => {
+    setPromptData(prompt);
+  };
+
+  const handleSelectPreviousPromptLocations = (restaurants: MapMarker[]) => {
+    setPlaceMarkers(restaurants);
+    setActiveOverlay("restaurant");
+  };
+
   return (
     <div>
       <UserMenu />
@@ -344,7 +359,13 @@ export default function DashboardPage() {
         />
       )}
       {isOverlayVisible && activeOverlay === "previous" && (
-        <PreviousPromptOverlay isVisible={activeOverlay === "previous"} />
+        <PreviousPromptOverlay
+          isVisible={activeOverlay === "previous"}
+          onSelectPrompt={handleSelectPreviousPrompt}
+          handleSelectPreviousPromptLocations={
+            handleSelectPreviousPromptLocations
+          }
+        />
       )}
       {isOverlayVisible && activeOverlay === "recently" && (
         <RecentlyVisitedOverlay
