@@ -1,13 +1,23 @@
+import { MapMarker } from "./map";
 import React, { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
 import { authApi } from "@/lib/redux/slices/authSlice";
 
 interface PreviousPromptOverlayProps {
   isVisible: boolean;
+  onSelectPrompt: (prompt: {
+    locationCoords: { lat: number; lng: number };
+    foodPreference: string;
+    dietaryPreference: string;
+    maxPrice?: number;
+  }) => void;
+  handleSelectPreviousPromptLocations: (restaurants: MapMarker[]) => void;
 }
 
 export function PreviousPromptOverlay({
   isVisible,
+  onSelectPrompt,
+  handleSelectPreviousPromptLocations,
 }: PreviousPromptOverlayProps) {
   const user = useSelector((state: any) => state.auth.user);
   const isAuthenticated = useSelector(
@@ -70,7 +80,19 @@ export function PreviousPromptOverlay({
           {suggestions.map((suggestion: any) => (
             <div
               key={suggestion.id}
-              className="flex flex-col w-full bg-white p-4 rounded-xl shadow border border-gray-300 mb-4"
+              className="flex flex-col w-full bg-white p-4 rounded-xl shadow border border-gray-300 mb-4 cursor-pointer hover:opacity-75"
+              onClick={() => {
+                onSelectPrompt({
+                  locationCoords: {
+                    lat: suggestion.prompt.lat,
+                    lng: suggestion.prompt.lng,
+                  },
+                  foodPreference: suggestion.prompt.foodPreference,
+                  dietaryPreference: suggestion.prompt.dietaryPreference,
+                  maxPrice: suggestion.prompt.maxPrice,
+                });
+                handleSelectPreviousPromptLocations(suggestion.locations);
+              }}
             >
               <p className="text-sm text-gray-500 mb-2">
                 <strong>Date:</strong>{" "}
