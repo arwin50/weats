@@ -62,7 +62,8 @@ export const RecentlyVisitedOverlay = ({
       {recentlyVisited.map((restaurant, index) => (
         <div
           key={index}
-          className="bg-[#FEF5E3] rounded-xl p-4 mb-4 shadow-md flex items-start gap-4"
+          className="bg-[#FEF5E3] rounded-xl p-4 mb-4 shadow-md flex items-start gap-4 cursor-pointer"
+          onClick={() => onSelectRestaurant(restaurant)}
         >
           <div className="relative w-16 h-24 rounded-lg overflow-hidden">
             {restaurant.photo_url ? (
@@ -92,29 +93,13 @@ export const RecentlyVisitedOverlay = ({
                 <span className="text-yellow-500">★</span>
                 <span>{restaurant.rating || "None"}</span>
               </div>
-              <div className="flex items-center gap-4 text-gray-700">
-                <div className="flex items-center gap-1">
-                  <LocationOnIcon className="text-sm" fontSize="small" />
-                  <span className="text-sm">0.3km</span>
-                </div>
-                <div className="flex items-center gap-1">
-                  <AccessTimeIcon className="text-sm" fontSize="small" />
-                  <span className="text-sm">15 mins</span>
-                </div>
-              </div>
             </div>
-            <div className="mt-1 flex justify-between items-center">
+            <div className="mt-2 flex justify-between items-center">
               {restaurant.types?.[0] && (
-                <span className="bg-red-200 text-red-800 text-xs px-2 py-1 rounded-full">
+                <span className="bg-red-200 text-red-800  text-xs px-2 py-1 rounded-full">
                   {restaurant.types[0].replace(/_/g, " ")}
                 </span>
               )}
-              <button
-                onClick={() => onSelectRestaurant(restaurant)}
-                className="text-sm px-3 py-1 bg-gray-200 hover:bg-gray-300 text-gray-800 rounded-full"
-              >
-                Details
-              </button>
             </div>
           </div>
         </div>
