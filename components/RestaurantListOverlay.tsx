@@ -54,7 +54,7 @@ export const RestaurantListOverlay = ({
     <>
       {" "}
       <div
-        className={`absolute sm:fixed left-0 top-20 sm:top-20 h-[85%] w-[70%] sm:w-100 bg-[#D5DBB5] border-8 border-[#D5DBB5] transform transition-transform duration-300 ease-in-out flex flex-col items-center rounded-r-3xl ${
+        className={`absolute sm:fixed left-0 top-22 sm:top-25 h-[85%] w-[70%] sm:w-100 bg-[#D5DBB5] border-8 border-[#D5DBB5] transform transition-transform duration-300 ease-in-out flex flex-col items-center rounded-r-3xl ${
           isVisible ? "translate-x-0" : "-translate-x-full"
         }`}
       >
