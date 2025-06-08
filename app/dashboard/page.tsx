@@ -245,7 +245,7 @@ export default function DashboardPage() {
 
   return (
     <div>
-      {/* Logo */}
+      <div className="absolute fixed right-0 top-0 z-10">
         <Image
           src={logo || "/placeholder.svg"}
           alt="Logo"
