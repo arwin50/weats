@@ -22,8 +22,8 @@ export default function StartingPage() {
         className="fixed top-4 xs:top-6 sm:top-7 left-14 xs:left-18 sm:left-22 z-50 flex items-center gap-1 sm:gap-2 bg-[#b1d1c7] hover:bg-[#477769] text-gray-800 py-1.5 xs:py-2 sm:py-3 px-2 xs:px-3 sm:px-6 rounded-lg shadow-lg transition-colors text-xs xs:text-sm sm:text-base cursor-pointer"
       >
         <ArrowLeft className="h-3 w-3 xs:h-4 xs:w-4 sm:h-5 sm:w-5" />
-        <span className="hidden xs:inline">Back to Dashboard</span>
-        <span className="inline xs:hidden">Back</span>
+        <span className="hidden xs:inline text-gray-800">Back to Dashboard</span>
+        <span className="inline xs:hidden text-gray-800">Back</span>
       </button>
 
       <p className="text-[2.1rem] sm:text-[4rem] text-green-700 text-lg ">

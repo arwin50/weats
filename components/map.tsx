@@ -1,18 +1,27 @@
-"use client"
+"use client";
 
-import React, { useState, useCallback, useEffect } from "react"
-import { GoogleMap, useLoadScript, Marker, Polyline } from "@react-google-maps/api"
-import { RestaurantModal } from "./RestaurantModal"
+import React, { useState, useCallback, useEffect } from "react";
+import {
+  GoogleMap,
+  useLoadScript,
+  Marker,
+  Polyline,
+} from "@react-google-maps/api";
+import { RestaurantModal } from "./RestaurantModal";
 
 const getContainerStyle = () => ({
   width: "100%",
   height: "100vh", // Full viewport height for better mobile experience
-})
+});
 
 const getMarkerSymbol = (color: string, scale = 10) => {
   // Check if Google Maps is fully loaded
-  if (typeof window.google === "undefined" || !window.google.maps || !window.google.maps.SymbolPath) {
-    console.warn("Google Maps API not fully loaded")
+  if (
+    typeof window.google === "undefined" ||
+    !window.google.maps ||
+    !window.google.maps.SymbolPath
+  ) {
+    console.warn("Google Maps API not fully loaded");
     return {
       path: "CIRCLE", // Fallback to string path
       fillColor: color,
@@ -20,115 +29,125 @@ const getMarkerSymbol = (color: string, scale = 10) => {
       strokeColor: "#ffffff",
       strokeWeight: 2,
       scale,
-    }
+    };
   }
 
   return {
-    path: window.google.maps.SymbolPath.CIRCLE,
+    path: google.maps.SymbolPath.CIRCLE,
     fillColor: color,
-    fillOpacity: 0.9,
-    strokeColor: "#ffffff",
-    strokeWeight: 2,
+    fillOpacity: 0.95,
+    strokeColor: "#5C5C5C",
+    strokeWeight: 1.25,
     scale,
-  }
-}
+  };
+};
 
 export interface MapMarker {
-  id: string
-  name: string
-  address: string
-  lat: number
-  lng: number
-  rating?: number
-  user_ratings_total?: number
-  price_level?: number | null
-  types?: string[]
-  description?: string
-  recommendation_reason?: string
-  rank?: number
-  photo_url?: string
-  isVisited?: boolean
+  id: string;
+  name: string;
+  address: string;
+  lat: number;
+  lng: number;
+  rating?: number;
+  user_ratings_total?: number;
+  price_level?: number | null;
+  types?: string[];
+  description?: string;
+  recommendation_reason?: string;
+  rank?: number;
+  photo_url?: string;
+  isVisited?: boolean;
 }
 
 interface MapProps {
-  markers: MapMarker[]
-  center: { lat: number; lng: number }
+  markers: MapMarker[];
+  center: { lat: number; lng: number };
 }
 
 export const FoodMap = ({ markers, center }: MapProps) => {
-  const [selectedRestaurant, setSelectedRestaurant] = useState<MapMarker | null>(null)
-  const [mapCenter, setMapCenter] = useState(center)
+  const [selectedRestaurant, setSelectedRestaurant] =
+    useState<MapMarker | null>(null);
+  const [mapCenter, setMapCenter] = useState(center);
   const [travelInfo, setTravelInfo] = useState<{
-    distanceText: string
-    durationText: string
-  } | null>(null)
-  const [routePath, setRoutePath] = useState<google.maps.LatLngLiteral[]>([])
-  const mapRef = React.useRef<google.maps.Map | null>(null)
-  const [isLoaded, setIsLoaded] = useState(false)
-  const [isGoogleMapsReady, setIsGoogleMapsReady] = useState(false)
-  const [isMobile, setIsMobile] = useState(false)
+    distanceText: string;
+    durationText: string;
+  } | null>(null);
+  const [routePath, setRoutePath] = useState<google.maps.LatLngLiteral[]>([]);
+  const mapRef = React.useRef<google.maps.Map | null>(null);
+  const [isLoaded, setIsLoaded] = useState(false);
+  const [isGoogleMapsReady, setIsGoogleMapsReady] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
 
   const { isLoaded: googleMapsIsLoaded, loadError } = useLoadScript({
     googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || "",
-  })
+  });
 
   // Check if device is mobile
   useEffect(() => {
     const checkMobile = () => {
-      setIsMobile(window.innerWidth < 768)
-    }
+      setIsMobile(window.innerWidth < 768);
+    };
 
-    checkMobile()
-    window.addEventListener("resize", checkMobile)
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
 
-    return () => window.removeEventListener("resize", checkMobile)
-  }, [])
+    return () => window.removeEventListener("resize", checkMobile);
+  }, []);
 
   useEffect(() => {
     // Check if Google Maps is fully loaded
     if (window.google && window.google.maps && window.google.maps.SymbolPath) {
-      setIsGoogleMapsReady(true)
-      setIsLoaded(true)
+      setIsGoogleMapsReady(true);
+      setIsLoaded(true);
     } else {
       // If not loaded, set up a listener for when it loads
       const checkGoogleMaps = setInterval(() => {
-        if (window.google && window.google.maps && window.google.maps.SymbolPath) {
-          setIsGoogleMapsReady(true)
-          setIsLoaded(true)
-          clearInterval(checkGoogleMaps)
+        if (
+          window.google &&
+          window.google.maps &&
+          window.google.maps.SymbolPath
+        ) {
+          setIsGoogleMapsReady(true);
+          setIsLoaded(true);
+          clearInterval(checkGoogleMaps);
         }
-      }, 100)
+      }, 100);
 
       // Cleanup interval
-      return () => clearInterval(checkGoogleMaps)
+      return () => clearInterval(checkGoogleMaps);
     }
-  }, [])
+  }, []);
 
   const onMapLoad = useCallback((map: google.maps.Map) => {
-    mapRef.current = map
-  }, [])
+    mapRef.current = map;
+  }, []);
 
   const handleMarkerClick = (marker: MapMarker) => {
-    setSelectedRestaurant(marker)
-    const destination = { lat: marker.lat, lng: marker.lng }
+    setSelectedRestaurant(marker);
+    const destination = { lat: marker.lat, lng: marker.lng };
 
     if (mapRef.current) {
-      mapRef.current.panTo(destination)
+      mapRef.current.panTo(destination);
     }
-  }
+  };
 
   const getMarkerStyle = (marker: MapMarker) => {
-    let color = "#E26F43" // default
-    if (marker.isVisited)
-      color = "#4CAF50" // Green for visited
-    else if (marker.rating && marker.rating >= 4.5) color = "#4CAF50"
-    else if (marker.price_level && marker.price_level >= 3) color = "#9C27B0"
+    let color = "#B49F8D"; // Warm neutral default
+
+    if (marker.isVisited) color = "#8BAA91"; // Muted green
+    else if (marker.rating && marker.rating >= 4.5)
+      color = "#7CA6A1"; // Dusty teal
+    else if (marker.price_level && marker.price_level >= 3)
+      color = "#A28DA4"; // Muted purple
+    else color = "#C88B85"; // Muted terracotta for UV
 
     // Adjust marker size based on device type and rank
-    const baseScale = isMobile ? 8 : 10 // Smaller markers on mobile
-    const scale = marker.rank ? Math.max(baseScale, (isMobile ? 12 : 14) - marker.rank * 0.5) : baseScale
-    return getMarkerSymbol(color, scale)
-  }
+    const baseScale = isMobile ? 8 : 10; // Smaller markers on mobile
+    const scale = marker.rank
+      ? Math.max(baseScale, (isMobile ? 12 : 14) - marker.rank * 0.5)
+      : baseScale;
+    return getMarkerSymbol(color, scale);
+  };
 
   const getMapOptions = () => ({
     fullscreenControl: !isMobile, // Hide fullscreen control on mobile
@@ -163,11 +182,11 @@ export const FoodMap = ({ markers, center }: MapProps) => {
         stylers: [{ visibility: "off" }],
       },
     ],
-  })
+  });
 
   const getInitialZoom = () => {
-    return isMobile ? 14 : 15 // Slightly zoomed out on mobile for better overview
-  }
+    return isMobile ? 14 : 15; // Slightly zoomed out on mobile for better overview
+  };
 
   if (!isLoaded || !isGoogleMapsReady) {
     return (
@@ -177,7 +196,7 @@ export const FoodMap = ({ markers, center }: MapProps) => {
           <p className="text-sm sm:text-base text-gray-600">Loading map...</p>
         </div>
       </div>
-    )
+    );
   }
 
   if (loadError) {
@@ -185,11 +204,15 @@ export const FoodMap = ({ markers, center }: MapProps) => {
       <div className="w-full h-screen flex items-center justify-center bg-gray-100">
         <div className="text-center p-4">
           <div className="text-red-500 text-2xl sm:text-4xl mb-4">⚠️</div>
-          <h2 className="text-lg sm:text-xl font-semibold text-gray-800 mb-2">Error loading maps</h2>
-          <p className="text-sm sm:text-base text-gray-600">Please check your internet connection and try again.</p>
+          <h2 className="text-lg sm:text-xl font-semibold text-gray-800 mb-2">
+            Error loading maps
+          </h2>
+          <p className="text-sm sm:text-base text-gray-600">
+            Please check your internet connection and try again.
+          </p>
         </div>
       </div>
-    )
+    );
   }
 
   return (
@@ -217,7 +240,7 @@ export const FoodMap = ({ markers, center }: MapProps) => {
             rank: marker.rank,
             rankType: typeof marker.rank,
             isVisited: marker.isVisited,
-          })
+          });
 
           return (
             <Marker
@@ -225,15 +248,20 @@ export const FoodMap = ({ markers, center }: MapProps) => {
               position={{ lat: marker.lat, lng: marker.lng }}
               title={marker.name}
               onClick={() => handleMarkerClick(marker)}
-              icon={getMarkerStyle(marker)}
+              icon={{
+                url: marker.isVisited
+                  ? "https://maps.google.com/mapfiles/ms/icons/green-dot.png"
+                  : "https://maps.google.com/mapfiles/ms/icons/red-dot.png",
+                scaledSize: new google.maps.Size(40, 40),
+              }}
               label={{
-                text: marker.isVisited ? "V" : marker.rank?.toString() || "",
-                color: "#ffffff",
-                fontSize: isMobile ? "12px" : "14px", // Smaller font on mobile
+                text: marker.isVisited ? "V" : "UV",
+                color: "#000000",
+                fontSize: isMobile ? "12px" : "14px",
                 fontWeight: "bold",
               }}
             />
-          )
+          );
         })}
 
         {/* Route polyline */}
@@ -254,12 +282,12 @@ export const FoodMap = ({ markers, center }: MapProps) => {
         restaurant={selectedRestaurant}
         isOpen={!!selectedRestaurant}
         onClose={() => {
-          setSelectedRestaurant(null)
-          setRoutePath([])
-          setTravelInfo(null)
+          setSelectedRestaurant(null);
+          setRoutePath([]);
+          setTravelInfo(null);
         }}
         travelInfo={travelInfo}
       />
     </div>
-  )
-}
+  );
+};

@@ -37,12 +37,26 @@ interface ApiResponse {
   count: number;
 }
 
+function useIsMobile() {
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkScreen = () => setIsMobile(window.innerWidth < 768);
+    checkScreen();
+    window.addEventListener("resize", checkScreen);
+    return () => window.removeEventListener("resize", checkScreen);
+  }, []);
+
+  return isMobile;
+}
+
 export default function DashboardPage() {
   const promptData = useAppSelector((state) => state.prompt);
   const authData = useAppSelector((state) => state.auth);
   const [placeMarkers, setPlaceMarkers] = useState<MapMarker[]>([]);
   const [combinedMarkers, setCombinedMarkers] = useState<MapMarker[]>([]);
-  const [center, setCenter] = useState({ lat: 10.3157, lng: 123.8854 });
+  const [center, setCenter] = useState(promptData.locationCoords);
+
   const [selectedRestaurant, setSelectedRestaurant] =
     useState<MapMarker | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -57,6 +71,7 @@ export default function DashboardPage() {
   const [isLoadingVisited, setIsLoadingVisited] = useState(false);
   const [visitedError, setVisitedError] = useState<string | null>(null);
   const router = useRouter();
+  const isMobile = useIsMobile();
 
   useEffect(() => {
     // Log user data
@@ -271,6 +286,10 @@ export default function DashboardPage() {
     setSelectedRestaurant(restaurant);
     setIsModalOpen(true);
 
+    if (isMobile) {
+      setIsOverlayVisible(false);
+    }
+
     // Add to recently visited, avoiding duplicates
     setRecentlyVisited((prev) => {
       const exists = prev.find((r) => r.name === restaurant.name);
@@ -312,10 +331,14 @@ export default function DashboardPage() {
   const handleModalClose = () => {
     setIsModalOpen(false);
     setSelectedRestaurant(null);
+
+    if (isMobile) {
+      setIsOverlayVisible(true);
+    }
   };
 
-  // Determine if overlays are effectively visible (not when modal is open)
-  const effectiveOverlayVisibility = isOverlayVisible && !isModalOpen;
+  const effectiveOverlayVisibility =
+    isOverlayVisible && (!isMobile || !isModalOpen);
 
   return (
     <div>
@@ -419,8 +442,7 @@ export default function DashboardPage() {
           </div>
         </div>
       )}
-
-      <FoodMap markers={combinedMarkers} center={center} />
+      <FoodMap markers={combinedMarkers} center={center!} />
 
       {/* Overlays - only visible when effectively on (not when modal is open) */}
       {effectiveOverlayVisibility && activeOverlay === "restaurant" && (
